@@ -190,3 +190,73 @@ en CONTEXTO RN-20, RN-22 y RN-34.
 - **RN-25 pierde «situación de la persona».** La Entrevista 1 la pedía sin definirla y su mapeo a
   H6/H8 era inferido (HZ11); con ambos descartados, sale de los obligatorios del caso. Cae también la
   equivalencia de «con quién estaba» (RN-24, HZ09).
+
+## 2026-10-30 · Revisión de pendientes (hacia la versión 2)
+
+- **DENUNCIA se modela con la propuesta en revisión** (CONTEXTO §9): DNI del denunciante (obligatorio,
+  texto con validación de formato, sin enlace a PERSONA), fecha de la denuncia (obligatoria), número
+  de trámite (opcional, texto libre) y observaciones (opcional). La carga solo Zoonosis (RN-06). No se
+  sabe cómo la guarda Zoonosis ni si tiene identificador: se revisa más adelante con ellos. Se adopta
+  igual porque ofrecerla en el diseño no hace perder nada y destraba la v2 y Figma.
+- **Criterio para lo tentativo.** Todo pendiente que ya tiene propuesta o candidato se modela y se
+  diseña tal como está, sin darlo por cerrado (CONTEXTO §9). Aplica, entre otros, a: motivos de
+  desestimación, TIPO_EVENTO, lesión múltiple, criterio de `finalizado` (día 10), vacuna antirrábica
+  como sí/no, observación solo al día 10, DNI en el formulario público y equivalencias de RN-24.
+- **DOCUMENTO = nombre del archivo + URL** donde se aloja (más creación y última modificación,
+  RN-27). Cuelga del caso (certificado médico) o de CASO_ANIMAL (fotos del animal). Sin tipo ni datos
+  del certificado. Cierra la brecha §7.4. En la v1 era una entidad sin atributos.
+- **TIPO_EVENTO se modela como está:** catálogo con cuatro valores (ataque con mordedura, lesión
+  compatible, intento sin lesión, lesión derivada) y FK desde CASO, uno por caso. Tentativo.
+- **CASO suma `motivo_desestimacion`** (fuera de alcance, fuera de la provincia, hecho inexistente o no
+  verificable, cargado por error), obligatorio al desestimar, más una observación libre. Tentativo.
+- **Lesión múltiple:** se mantiene como valor «Múltiples» del enumerado. Tentativo.
+- **COINCIDENCIA y el vínculo entre casos quedan para más adelante** (junto con el motor nuevo).
+- **Motor de coincidencias: es del backend.** Para el diseño alcanza con un aviso de que existe un
+  registro que coincide, con el DNI como filtro principal. COINCIDENCIA queda como en la v1, tentativa.
+- **Cola de solicitudes en `Casos › Solicitudes`.**
+- **Formulario detallado del ciudadano: cuatro secciones tentativas** (dónde fue, qué pasó, el animal
+  una vez por animal, la denuncia). Detalle y destino de cada pregunta en CONTEXTO RN-32.
+- **Permisos por organismo: tentativa sacada de la narrativa** (CONTEXTO §9). Todos los agentes ven
+  todos los casos; los datos comunes los edita cualquier agente y los de dominio solo su ente.
+- **CADIC no tiene datos propios.** Es canal de alta y completa los datos comunes del caso.
+- **Formulario detallado: dueño y chip entran** según de quién es el animal (mascota propia: chip;
+  ajeno conocido: datos del dueño, opcional). Quedan en la solicitud hasta que Zoonosis los confirma.
+- **Permisos tentativos: el equipo los da por buenos.** Falta validarlos con los organismos.
+- **Obligatorio para nacer = RN-30 por canal; para estar completo = solo datos del caso.** Se da por
+  hecho, a revisar. Los campos que cuentan para estar completo son una **suposición del agente de
+  diseño** (fecha, ciudad, lugar, tipo de lugar, edad de la víctima, tipo de evento): revisarlos.
+  Un caso **`finalizado` puede tener datos faltantes y no cuenta como incompleto** en los totales
+  (p. ej. nunca se ubicó al perro o a la víctima); cierra también «caso sin contacto que nunca se
+  ubica». Un caso **`desestimado` e incompleto sí se registra como incompleto**.
+- **Desaparece el medidor de completitud de la ficha** («N de 50 campos») hasta nuevo aviso: venía
+  del prototipo, no de una decisión del equipo. La ficha muestra la marca Incompleto.
+- **TRATAMIENTO no va en el formulario del ciudadano:** lo ve y lo carga solo Salud (se mantiene lo
+  del 2026-10-29).
+- **La edad de la víctima se queda en el formulario detallado.**
+- **Si el animal muere, el caso no finaliza: escala** y pide atención especial al tratamiento. Falta
+  definir cómo se representa (estado nuevo o marca de alerta).
+- **Pendiente: dónde se cuenta el desestimado incompleto** (RN-28 y RN-11 lo dejan fuera de todo
+  total).
+- **Denuncia «desglosada y devuelta» (HZ08): pendiente a revisión.** Posibilidad: estado en DENUNCIA
+  (pendiente de confirmación, confirmada, desestimada), que choca con RN-13.
+- **HZ03 y HZ16 cerrados:** H11 ya estaba descartado y HZ03 solo servía para importar el F2.
+- **Sugerencia: no hay importación; la carga es manual.** Cae el lote de importación y, si se
+  confirma, R.25 y Administración › Importar CSV. Los registros viejos cargados a mano usan
+  `canal_origen = historico`.
+- **Desestimado incompleto: dónde se cuenta queda para ver y completar más adelante** (delicado).
+- **Las solicitudes descartadas se guardan para siempre**, con sus datos.
+- **DENUNCIA con estado** (`pendiente_confirmacion · confirmada · desestimada`): es la opción con más
+  peso para registrar la denuncia «desglosada y devuelta» (HZ08). Se modela así, tentativa; RN-13 («la
+  denuncia no tiene estados») queda en revisión.
+- **Personas sin DNI argentino:** pendiente importante, para más adelante.
+- **Abuso del canal ciudadano:** importante, pendiente a modelar, no entra ahora.
+- **Seguridad:** por ahora usuario y contraseña; 2FA y políticas de la Ley 25.326, más adelante.
+- **Sin PostGIS:** la ubicación es latitud, longitud y textos; alcanza con PostgreSQL común.
+- **Refine es una sugerencia a futuro** (posible migración del front en 4 a 6 meses, si sucede). Las
+  versiones no afectan al diseño: el front ya usa las actuales.
+- **Escalada cuando el animal muere: estado del caso `grave`.** Tentativo.
+- **Caso con varios animales: ¿finaliza cuando todos pasan el día 10?** Pregunta pendiente para
+  Zoonosis y/o Salud; no frena el diseño.
+- **Seguridad y políticas de la Ley 25.326 quedan pendientes.** Registrar quién consultó qué es solo
+  una sugerencia: no se modela.
+

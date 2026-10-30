@@ -2,7 +2,7 @@
 
 > Fuente de verdad del dominio de SIRAM. La leen el agente de diseño y el de backend; el front recibe
 > solo lo que necesita en `front/docs/` (ver §1).
-> Última actualización: 2026-10-29. Lo mantiene el agente de diseño (ver §1).
+> Última actualización: 2026-10-30. Lo mantiene el agente de diseño (ver §1).
 
 ---
 
@@ -91,7 +91,8 @@ casos de ataques y mordeduras de **perros y gatos** a personas en Tierra del Fue
   (Acosta, Cabrera, Iraola, Marchisoney, Valle). Metodología Scrum.
 - **Stack (RT.01–RT.08):** React + Vite · Python/Django con API REST · PostgreSQL · Docker ·
   tecnología geográfica (mapa y geocodificación: OpenStreetMap, Leaflet y Nominatim, RN-33; la base
-  geográfica sigue a definir, PostGIS es el candidato natural) · HTTPS/TLS obligatorio.
+  la ubicación se guarda como latitud, longitud y textos en PostgreSQL común: **sin PostGIS**,
+  *2026-10-30*) · HTTPS/TLS obligatorio.
 
 ---
 
@@ -280,7 +281,9 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 
 ### Estados: tres ejes independientes *(DS)*
 - **RN-09 · Estado del caso (eje 1, excluyente):** `registrado · en_seguimiento · finalizado ·
-  desestimado · unificado`. Un caso `unificado` apunta al que lo absorbió. Un caso nace
+  desestimado · unificado`. Un caso `unificado` apunta al que lo absorbió. *(2026-10-30, tentativo:
+  se suma el estado `grave`, de escalada, para cuando el animal muere durante la
+  observación; ver §9, criterio de `finalizado`.)* Un caso nace
   `registrado`. (`sin_confirmar` y `confirmado` se eliminaron el 2026-10-08: venían del formulario
   público, donde había que confirmar lo que cargaba cualquiera; hoy un caso siempre lo registra un agente.)
 - **RN-10 · Motivo de espera (eje 2):** `contacto · respuesta · certificado`. **Solo existe si el
@@ -296,6 +299,9 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   pegados al identificador, a la izquierda.
 - **RN-13 · La denuncia no tiene estados.** Es un dato anotado en el caso. (El ciclo `recibida ·
   en_revision · vinculada · desestimada` se eliminó el 2026-10-08 junto con la cola de denuncias.)
+  *(2026-10-30, EN REVISIÓN: el equipo prefiere que DENUNCIA tenga estado `pendiente_confirmacion ·
+  confirmada · desestimada`, para registrar la denuncia «desglosada y devuelta» (HZ08). Tentativo:
+  se modela y se diseña así; no se da por cerrado.)*
 
 ### Duplicados y eventos relacionados *(DS, R.13, R.14)*
 
@@ -391,10 +397,12 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   de esta lista (ahora es la tenencia de cada CASO_ANIMAL, RN-22). *(2026-10-29)*
   (La «situación de la persona» se quitó el 2026-10-29:
   la Entrevista 1 no la definía, su mapeo a H6/H8 era inferido (HZ11), y ambos campos se
-  descartaron.) La ficha muestra la
-  completitud sobre los 50 campos («38 de 50»). *(P)* Con la obligatoriedad por canal (RN-30) hay
+  descartaron.) ~~La ficha muestra la
+  completitud sobre los 50 campos («38 de 50»). *(P)*~~ *(2026-10-30: venía del prototipo, no de una
+  decisión del equipo; desaparece hasta nuevo aviso. La ficha muestra la marca Incompleto.)* Con la obligatoriedad por canal (RN-30) hay
   que separar **obligatorio para nacer** (lo que exige el formulario inicial) de **obligatorio para
-  estar completo** (lo que define la marca Incompleto). Pendiente, §9.
+  estar completo** (lo que define la marca Incompleto). *(2026-10-30, ver §9: para nacer manda
+  RN-30 por canal; para estar completo cuentan solo los datos del caso.)*
 - **RN-26 · Datos epidemiológicos clave:** edad, zona del cuerpo, tipo de lugar (ámbito). *(E1)*
   Filtros del mapa: tamaño y color del animal. *(E1)*
   La **zona del cuerpo vive solo en TRATAMIENTO** y la carga Salud (RN-34): la información del caso y
@@ -484,6 +492,29 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   - Lo ata a la solicitud un **token aleatorio, no adivinable** (nunca el número de caso: evita
     enumeración / IDOR), que **vence del lado del servidor** (≈1 h) y solo permite completar esa
     solicitud (mínimo privilegio). El navegador lo olvida al cerrar la pestaña.
+  - **Secciones y preguntas** *(tentativa, 2026-10-30; se diseña así, no está cerrada)*. Solo lo que
+    está al alcance de la persona. TRATAMIENTO queda afuera: lo ve y lo carga solo Salud (RN-34).
+    Toda pregunta con escala admite «No sé» (RN-23). Lo más valioso va primero,
+    porque la persona puede abandonar en cualquier sección.
+    1. **Dónde fue** → CASO: ubicación (pin + dirección propuesta + referencias, RN-33), ciudad (H3:
+       Ushuaia, Río Grande, Tolhuin, otra), tipo de lugar (H5: casa propia, casa ajena, vía pública,
+       espacio público, zona rural) y hora (H2). La fecha ya vino en el inicial.
+    2. **Qué pasó** → CASO y PERSONA víctima: qué pasó (mordedura, arañazo, intentó atacar sin
+       lastimar, me lastimé al escapar → TIPO_EVENTO, RN-03, RN-24), cuántos animales atacaron (crea
+       un CASO_ANIMAL por cada uno), edad de la persona atacada (P2, dato epidemiológico clave,
+       RN-26; se queda en el detallado, no pasa al inicial, *2026-10-30*) y su domicilio (P7,
+       opcional).
+    3. **El animal** → CASO_ANIMAL y DESCRIPCIÓN, **una vez por animal** («Animal 1 de 3»): especie
+       (la del primero viene del inicial), de quién es (A5: mascota propia, ajeno conocido, ajeno
+       desconocido), dónde vive si se sabe (A7), si está vacunado contra la rabia (A8), si podría
+       reconocerlo (A11); cómo era: tamaño (A2), sexo (A9), edad aparente, color (A13), si conoce la
+       raza y cuál (A3, A4); fotos del animal (X2, opcional). Según de quién es:
+       - *Mascota propia*: el dueño es la persona que completa; se pregunta si tiene chip y su número.
+       - *Ajeno conocido*: si sabe quién es el dueño, nombre y forma de contacto (opcional).
+       Lo que declara sobre el dueño y el chip queda en la solicitud; Zoonosis lo confirma antes de
+       pasarlo a CASO_ANIMAL (RN-31: nada escribe en PERSONA sin un agente).
+    4. **La denuncia** → CASO, declarado (RN-07): si hizo la denuncia en Zoonosis (D1) y, si no, por
+       qué (D3).
 - **RN-33 · Ubicación del hecho.** Tres datos: **punto** en el mapa, **dirección** en texto y
   **referencias** libres («casa roja», «plaza en la esquina»).
   - Patrón de apps de viaje: la persona ubica el pin y la geocodificación inversa propone la
@@ -501,8 +532,10 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   mezclarían los tratamientos de mordeduras distintas, y como hay una sola víctima por caso, el
   caso identifica el tratamiento. *(2026-10-28; antes «la participación de la víctima»)* Cubre
   L5–L7 de §7.1. **Todo TRATAMIENTO lo carga solo Salud**: el ciudadano no responde L5–L7 (en el F1
-  los respondía porque no había acceso a los datos de Salud). *(2026-10-29)* Lo propio de Zoonosis es el seguimiento del animal (CASO_ANIMAL, RN-22). Falta
-  relevar lo de CADIC.
+  los respondía porque no había acceso a los datos de Salud). *(2026-10-29)* Lo propio de Zoonosis es el seguimiento del animal (CASO_ANIMAL, RN-22). **CADIC no
+  tiene datos propios** *(decisión del equipo, 2026-10-30)*: por la narrativa, no hace nada que solo
+  pueda hacer CADIC. Es canal de alta y completa los datos comunes del caso (p. ej. busca el
+  contacto por DNI, narrativa paso 6).
 
 ---
 
@@ -520,8 +553,9 @@ se vuelca a `siram.mmd` cuando esté cerrada.
 > y CASO_ANIMAL (nueva, N animales por caso: dueño, tenencia, vacunado, observación del día 10) con
 > DESCRIPCIÓN (nueva, 1:1); TRATAMIENTO de Salud (nuevo) ligado al caso; historial por entidad en
 > lugar de AUDITORIA; marca de tiempo de creación en todo registro. `siram.mmd` **no se actualiza
-> todavía**: faltan definir DENUNCIA, COINCIDENCIA, el certificado médico y lo de CADIC, y el
-> modelo es el contrato con el back.
+> todavía**: falta definir COINCIDENCIA (tentativa, §9), y el modelo es el contrato con el back.
+> (*2026-10-30*: DENUNCIA entra con la propuesta de §9; DOCUMENTO queda definido, §7.4; lo que tiene
+> una propuesta tentativa se modela tal como está, ver §9.)
 
 El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** y no rige.
 
@@ -550,20 +584,27 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 2. ~~**Booleanos que no admiten «No sabe»** (`reincidente`, `atencion_medica`) — ver RN-23.~~ Ninguno
    queda: `atencion_medica` se deriva de TRATAMIENTO y `reincidente` se descartó. *(2026-10-29)*
 3. ~~Fecha de la denuncia (H0)~~ Resuelta en v1: `DENUNCIA.fecha`.
-4. **DOCUMENTO sin atributos:** necesita al menos tipo (certificado médico, foto),
+4. ~~**DOCUMENTO sin atributos.**~~ Resuelta el 2026-10-30 (decisión del equipo): DOCUMENTO guarda
+   solo el **nombre del archivo** y la **URL** donde se aloja (más creación y última modificación
+   automáticas, RN-27). Cuelga del caso (certificado médico) o de CASO_ANIMAL (fotos del animal). En
+   pantalla es un nombre junto a una miniatura o ícono. El certificado no se modela con sus datos.
+   Antecedente: necesitaba al menos tipo (certificado médico, foto),
    archivo y fecha. El pizarrón del 28/10 deja abierto el **certificado médico**: ¿se modela (con
    sus datos) o solo se guarda el archivo? *(2026-10-29: lo más probable es que sea solo una
    referencia al archivo; sin cerrar.)* Ya decidido *(2026-10-29)*: el certificado se adjunta al
    **caso** y lo carga Zoonosis; las fotos son **del animal** y se adjuntan a CASO_ANIMAL (las del
    lugar se descartaron). Falta definir los atributos.
-5. **Lote de importación:** el historial del prototipo cita «lote ZU-2026-09-12» y R.25 pide
-   informar qué filas no entraron y por qué; no hay entidad que lo guarde.
+5. ~~**Lote de importación:** el historial del prototipo cita «lote ZU-2026-09-12» y R.25 pide
+   informar qué filas no entraron y por qué; no hay entidad que lo guarde.~~ Sin importación, no hace
+   falta (sugerencia del 2026-10-30, §9).
 6. ~~**Coordenadas:** falta definir cuándo y cómo se geocodifica (H4 es texto libre en F1 y calle+número en F2).~~
    Resuelta por RN-33 (pin + dirección + referencias). Queda abierto solo para importaciones.
 7. **Lesión múltiple:** hoy es un valor «Múltiples» en un enumerado. Si hay que registrar cada
-   lesión por separado, pasa a ser entidad.
+   lesión por separado, pasa a ser entidad. *(2026-10-30: tentativo, se modela así: valor
+   «Múltiples».)*
 8. **Motivo de desestimación del caso:** CASO puede quedar `desestimado` pero no guarda por qué.
-   Falta el campo y la lista de motivos (pendiente, ver §9).
+   Falta el campo y la lista de motivos (pendiente, ver §9). *(2026-10-30: tentativo, se modela con
+   la propuesta de §9: `motivo_desestimacion` obligatorio al desestimar + observación libre.)*
 9. ~~**Registro histórico:** RN-21 exige DNI salvo en registros históricos; el modelo tiene que poder
    distinguirlos (p. ej. por origen o lote de importación) para aplicar la obligatoriedad.~~
    Resuelta: `canal_origen = historico` (RN-30). *(2026-10-29)*
@@ -587,11 +628,11 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   repo. No se instalan ni se importan.
 - **Versiones de Delta (referencia):** React 18.2 · MUI 7.1 (`@mui/x-date-pickers` 8.1) ·
   react-hook-form 7.43 · TanStack Query 5.75 · Vite 6.2. Si se mantienen o se actualizan, se
-  decide en el front (ver §9).
+  decide en el front. *(2026-10-30: el front ya usa las actuales, React 19.3 y MUI 7.3.)*
 - **Cáscara:** barra superior fija de 89 px; menú lateral de 240 px colapsable a 65 px; solo el
   contenido scrollea; sin breadcrumbs ni footer. Ítem activo = píldora `border-radius: 0 30px 30px 0`.
   **Dos niveles de menú, nunca tres.**
-- **Navegación:** Inicio (panel epidemiológico) · Casos (Bandeja, Nuevo caso,
+- **Navegación:** Inicio (panel epidemiológico) · Casos (Bandeja, Nuevo caso, Solicitudes,
   Posibles duplicados, Eventos relacionados, Incompletos) · Consultas (Búsqueda, Personas, Animales,
   Mapa, Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento, Importar CSV).
   Personas y Animales van en Consultas porque se **consultan**, no se trabajan (lo único que SIRAM
@@ -623,11 +664,19 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 
 ## 9. Tensiones y pendientes abiertos
 
+> **Criterio para lo tentativo** *(decisión del equipo, 2026-10-30)*: todo pendiente que ya tiene una
+> propuesta o un candidato se **modela y se diseña tal como está**, sin darlo por cerrado. Sigue
+> abierto y se revisa con el cliente o el equipo; mientras tanto no frena la v2 ni Figma. Quedan
+> como pendientes reales solo los que no tienen propuesta.
+
 **Tensiones entre fuentes — resueltas el 2026-10-08:**
 - **T-01 · Gatos → SÍ están dentro del alcance.** Perros y gatos (RN-02). Cierra HZ06.
 - **T-02 · «Baja de denuncias» → era vocabulario viejo.** El PDF usaba «denuncia» donde hoy decimos
   caso (RN-05). Sigue abierto, ya con el vocabulario nuevo: si una denuncia de Zoonosis
   «desglosada y devuelta» a las 48 h sin certificado (HZ08) se anota igual en el caso, y cómo.
+  *(2026-10-30: PENDIENTE A REVISIÓN. Pasa fuera de la plataforma. Opción con más peso para el
+  equipo: que DENUNCIA tenga un estado (pendiente de confirmación · confirmada · desestimada); se
+  modela así, tentativa, y RN-13 queda en revisión.)*
 - **T-03 · DNI → obligatorio** (RN-21).
 
 **Pendientes con el cliente:**
@@ -637,11 +686,18 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   no ubicado); qué pasa si muere o enferma en esos 10 días (no finaliza: es una alerta); y si
   «en observación» es un nuevo motivo de espera de `en_seguimiento`. No se modela hasta confirmarlo.
   *(2026-10-28: la observación del día 10 ya tiene lugar en CASO_ANIMAL, RN-22. Con varios animales
-  por caso, ¿el caso finaliza cuando todos pasan el día 10?)*
+  por caso, ¿el caso finaliza cuando todos pasan el día 10?)* **PREGUNTA PENDIENTE para Zoonosis y/o
+  Salud** *(2026-10-30)*: depende de la narrativa; no frena el diseño.
+  *(2026-10-30, decisión del equipo)*: **si el animal muere, el caso no finaliza: escala.** Sigue
+  abierto en la narrativa y pide **atención especial al tratamiento** de la víctima (Salud). La
+  escalada es **un estado del caso: `grave`**, tentativo: se modela así *(2026-10-30)*. (Antecedente: Adrián pidió el 16/10 el seguimiento de rabia aparte del
+  estado.) **Si el animal nunca se ubica**, el caso puede
+  finalizar incompleto (§9, «Obligatorio para nacer vs. para estar completo»).
 - ~~**A CONFIRMAR · Lista de entes** donde se puede haber hecho una denuncia (Zoonosis, policía…).~~
   Solo Zoonosis (RN-06). La policía no se modela; muy a futuro, podría sumarse. *(2026-10-29)*
 - **A DEFINIR · ¿Cuáles son las causas posibles para desestimar un caso?** Ninguna fuente las define.
-  Propuesta inicial (sin aprobar), con motivo obligatorio + observación libre:
+  Propuesta inicial (sin aprobar), con motivo obligatorio + observación libre. *(2026-10-30:
+  tentativa, se modela y se diseña así; no se da por cerrada.)*
   - *Fuera de alcance*: no fue un ataque de perro o gato a una persona (RN-02).
   - *Fuera de la provincia*: el hecho ocurrió fuera de Tierra del Fuego.
   - *Hecho inexistente o no verificable*: al verificarlo, no ocurrió o los datos eran falsos.
@@ -654,8 +710,9 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   contacto responsable (RN-20); del denunciante, solo el DNI en la denuncia. *(2026-10-28)*
 - ~~¿Vuelve el formulario público (R.17)?~~ Sí, como solicitud (RN-08, RN-31, RN-32). *(2026-10-23)*
 - **DENUNCIA: no se sabe cómo la guardan los entes** ni si tiene un identificador. No se modela el
-  formulario real de la denuncia. **Propuesta en revisión** (2026-10-23), pensada para poder ubicar
-  la denuncia en el sistema del ente:
+  formulario real de la denuncia. **Se adopta esta propuesta para la v2 y el diseño** *(decisión del
+  equipo, 2026-10-30)*; se revisa más adelante con Zoonosis, y ofrecerla no hace perder nada. Está
+  pensada para poder ubicar la denuncia en el sistema del ente (propuesta del 2026-10-23):
 
   | Campo | Tipo | Obligatorio |
   |---|---|---|
@@ -677,7 +734,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   - **Una víctima por caso:** dos víctimas del mismo ataque son dos casos (cada una tiene su
     seguimiento y su atención). Coincide con RN-14: los eventos relacionados se vinculan, nunca se
     fusionan.
-- **Datos propios de Zoonosis y CADIC** para completar un caso (los de Salud están en RN-34).
+- ~~**Datos propios de Zoonosis y CADIC** para completar un caso.~~ Zoonosis: seguimiento del animal
+  (RN-22), denuncias (RN-06) y certificado. CADIC: no tiene (RN-34). *(2026-10-30)*
 - **CONSULTAR CON SALUD · Esquema de la vacuna antirrábica.** La profilaxis post-exposición es un
   esquema de varias dosis en días distintos, no una sola. ¿Les interesa registrar el esquema
   (dosis y fechas) o solo si se inició? Hoy el tratamiento lo trata como un sí/no. *(2026-10-28)*
@@ -685,11 +743,12 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   animal sigue bien al día 10, no el estado en cada visita; alcanza con una fila de CasoAnimal que
   se actualiza. El registro por visita fue un supuesto sin base en el dominio y se descartó.
   **Repreguntar en la segunda entrevista con Zoonosis**; puede cambiar según lo que respondan.
-- **Personas sin DNI argentino** (p. ej. turistas extranjeros mordidos en Ushuaia): RN-21 exige DNI
-  y la validación de formato lo asume. ¿Pasaporte? ¿Tipo + número de documento? A futuro, no se
-  resuelve ahora. *(2026-10-23)*
-- **Caso sin contacto que nunca se ubica** (p. ej. alta de Salud sin teléfono ni correo, y la
-  búsqueda por DNI no da resultado): ¿queda `en_seguimiento` para siempre? ¿cuenta en estadísticas?
+- **PENDIENTE IMPORTANTE, PARA MÁS ADELANTE · Personas sin DNI argentino** (p. ej. turistas
+  extranjeros mordidos en Ushuaia): RN-21 exige DNI y la validación de formato lo asume. ¿Pasaporte?
+  ¿Tipo + número de documento? No se resuelve ahora. *(2026-10-23; marcado importante el 2026-10-30)*
+- ~~**Caso sin contacto que nunca se ubica**~~ (p. ej. alta de Salud sin teléfono ni correo, y la
+  búsqueda por DNI no da resultado). Puede pasar a `finalizado` aunque le falten datos, y entonces
+  no cuenta como incompleto (§9, «Obligatorio para nacer vs. para estar completo»). *(2026-10-30)*
 - ~~**¿Participa realmente Zoonosis?** (pizarrón 08/10)~~ Sí: es canal de alta, anota las denuncias
   (RN-06) y hace el seguimiento del animal (RN-22). *(2026-10-29)*
 - ~~¿Qué denuncias se asocian a un caso?~~ Solo las hechas en Zoonosis, anotadas por Zoonosis
@@ -701,12 +760,53 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   editar casos creados por otro organismo. El mecanismo ya está propuesto (RN-35, por fila y por
   campo); faltan las reglas concretas. Llevar a la entrevista con Salud: ¿le sirve ver la
   observación del día 10 del animal? Puede cambiar el tratamiento antirrábico de la víctima.
-- Qué hacer con «Mal estado de ADC» y «Otros» del F2 (HZ03); «Conoce al propietario del domicilio» (HZ16).
-- Formato real de entrada: export del F1 (HZ13, HZ14), transcripción del F2 en papel (HZ12), y el F3.
-- 2FA (R.05) y políticas de seguridad (Ley 25.326): sin definir.
+  **Tentativa, sacada de la narrativa** *(2026-10-30; el equipo la da por buena; se modela y se
+  diseña así, falta validarla con los organismos)*:
+  - **Por fila:** todo agente (Salud, Zoonosis, CADIC) ve todos los casos: es un registro compartido
+    (RN-01). Cualquier agente ve y resuelve las solicitudes. El analista ve casos sin datos
+    personales; el administrador no ve casos (§5).
+  - **Edición:** los **datos comunes** del caso (hecho, víctima, contacto, estado, animales y su
+    descripción) los edita cualquier agente, con su rastro en el historial (RN-27). Los **datos de
+    dominio** solo su ente: TRATAMIENTO, Salud (RN-34); seguimiento del animal (día 10,
+    observaciones, dueño, tenencia, chip) y DENUNCIA, Zoonosis (RN-06, RN-22). Lo declarado (D1, D3)
+    no lo edita nadie (RN-07).
+  - **Por campo:**
+
+    | Dato | Salud | Zoonosis | CADIC | Analista |
+    |---|---|---|---|---|
+    | Víctima y contacto (nombre, DNI, teléfono, correo) | Ve | Ve | Ve | No |
+    | Hecho, tipo de evento, estado, marcas | Ve | Ve | Ve | Ve |
+    | TRATAMIENTO completo | Ve | Solo si existe | Solo si existe | Solo agregados |
+    | Animal: descripción, tenencia | No | Ve | Ve | Ve |
+    | Animal: dueño y chip | No | Ve | No | No |
+    | Animal: observación del día 10 | Ve | Ve | Ve | Agregados |
+    | DENUNCIA | Solo si existe | Ve | Solo si existe | Agregados |
+    | Certificado médico (DOCUMENTO) | Ve | Ve | No | No |
+    | Lo declarado (D1, D3) | Ve | Ve | Ve | Ve |
+
+    «Solo si existe» = ve que el dato está (p. ej. «recibió atención», «tiene denuncia») sin su
+    detalle. Salud ve el día 10 porque puede cambiar el tratamiento antirrábico de la víctima.
+- ~~Qué hacer con «Mal estado de ADC» y «Otros» del F2 (HZ03); «Conoce al propietario del domicilio» (HZ16).~~
+  Cerrado *(2026-10-30)*: H11 se descartó el 2026-10-29 y HZ03 solo importaba para traducir el F2 al
+  importarlo, que ya no se hace.
+- ~~Formato real de entrada: export del F1 (HZ13, HZ14), transcripción del F2 en papel (HZ12), y el F3.~~
+  **SUGERENCIA del equipo (2026-10-30): no hay importación.** Cambió tanto el modelo que importar
+  los formularios viejos ya no parece posible; la carga se hace a mano. Afecta R.25 (importación
+  CSV), el lote de importación (§7.5), el menú Administración › Importar CSV y las reglas del
+  importador (RN-02, RN-24). Los registros viejos que se carguen a mano siguen siendo
+  `canal_origen = historico` (RN-21, RN-30).
+- 2FA (R.05) y políticas de seguridad (Ley 25.326): **para más adelante** *(2026-10-30)*. Por ahora
+  el acceso es usuario y contraseña. Queda por definir: cómo se protegen los datos guardados
+  (contraseñas con hash, cifrado de datos sensibles, copias de seguridad) y si se registran también
+  las **consultas** (quién vio qué ficha o exportó datos personales), no solo las modificaciones
+  que ya guarda el historial (RN-27). Pendiente, no frena el diseño. Registrar las consultas queda
+  como **sugerencia**: no se modela, no es necesario. Refine (§9, técnicos) es igual de opcional.
 
 **Pendientes de diseño (agente de diseño):**
-- **Motor de coincidencias nuevo** (lo diseña el equipo; después se compara con RN-16 a RN-18) y
+- **Motor de coincidencias** *(2026-10-30: es del backend; para el diseño alcanza con un **aviso** de
+  que existe un registro que coincide con el caso, con el DNI como filtro principal, y las pantallas
+  de comparar y consolidar se mantienen tentativas como están. COINCIDENCIA se modela como en la v1,
+  tentativa.)* Antes: motor nuevo (lo diseña el equipo; después se compara con RN-16 a RN-18) y
   qué pasa con COINCIDENCIA y con el vínculo entre casos (§7.10). *(2026-10-23)* Dos cosas que el
   motor nuevo tiene que tener en cuenta *(2026-10-29)*: la señal «mismo animal (color, tamaño, raza)»
   de RN-16 choca con RN-22 (DESCRIPCIÓN no es parte del motor); y con el animal con identidad, dos
@@ -716,11 +816,32 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   del momento y caso de contexto opcional (RN-27); animal absorbido (RN-22). Falta diseñar la
   **pantalla de historial**: va a ser una pantalla propia (decidido 2026-10-29), sin definir todavía.
 - **Estados del caso:** revisarlos junto con la narrativa general (RN-09, RN-10). *(2026-10-29)*
-- **Obligatorio para nacer vs. para estar completo** (RN-25, RN-30).
-- **Retención de solicitudes descartadas:** el borrado lógico conserva DNI y contacto; la Ley 25.326
-  pide minimización. ¿Plazo de retención?
-- **Cola de solicitudes en la navegación** (§8: dos niveles, nunca tres) y el formulario público
-  (inicial + detallado + pin).
+- **Obligatorio para nacer vs. para estar completo** (RN-25, RN-30). *(2026-10-30: el equipo lo da
+  por hecho así, a revisar más a fondo.)*
+  - **Para nacer:** la tabla de RN-30, según el canal. P. ej. Salud guarda sin fecha del hecho.
+  - **Para estar completo** (marca Incompleto): solo los datos del caso. Un caso nace Incompleto si
+    le falta alguno. La falta de contacto no es Incompleto: es `en_seguimiento` con motivo
+    `contacto` (narrativa, paso 6).
+  - **Qué campos cuentan para estar completo — SUPOSICIÓN del agente de diseño, no decidida por el
+    equipo; revisarla:** fecha del hecho, ciudad y lugar (RN-25), más **tipo de lugar** y **edad de
+    la víctima** (datos epidemiológicos clave, RN-26) y **tipo de evento** (clasifica el caso y lo
+    hace contable). La edad es de PERSONA, pero se cuenta porque hay una sola víctima por caso.
+    Zona del cuerpo (RN-26) no cuenta: vive en TRATAMIENTO.
+  - **Cerrar con datos faltantes** *(decisión del equipo, 2026-10-30)*:
+    - **`finalizado` + incompleto:** se permite, y **no cuenta como incompleto** en los totales. Es
+      lo esperable cuando la falta de datos es justamente lo que impidió resolverlo: nunca se ubicó
+      al perro que atacó, o nunca se ubicó a la víctima ni al contacto responsable.
+    - **`desestimado` + incompleto:** **sí se registra como incompleto** (conserva la marca).
+    - **PENDIENTE, SE VE Y SE COMPLETA MÁS ADELANTE (delicado) · ¿Dónde se cuenta el desestimado
+      incompleto?** Las estadísticas excluyen los desestimados (RN-28) y las listas de trabajo
+      muestran solo casos vigentes (RN-11): hoy no aparecería en ningún total. Falta definir en qué
+      total o listado se lo ve.
+  - ~~**Medidor de completitud de la ficha («35 de 50 campos»).**~~ Desaparece hasta nuevo aviso *(2026-10-30)*: venía del
+    prototipo del 25/09, no de una decisión del equipo, y contaba los 50 campos de la matriz.
+- ~~**Retención de solicitudes descartadas:**~~ Se guardan **para siempre**, con sus datos (decisión
+  del equipo, 2026-10-30; RN-06b). Contexto: la Ley 25.326 pide minimización.
+- ~~**Cola de solicitudes en la navegación**~~ Va en `Casos › Solicitudes` (§8). *(2026-10-30)* Sigue
+  pendiente diseñar el formulario público (inicial + detallado + pin); sus secciones, en RN-32.
 - ~~**«Fecha de novedad» de la bandeja.**~~ Es la **última modificación** del caso, el campo
   automático de RN-27, para que suba lo que alguien tocó recientemente. *(2026-10-29; antes «derivarla
   de AUDITORIA»)* El prototipo todavía ordena por número de caso (orden de registro).
@@ -735,18 +856,19 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   *Pendiente de confirmación* (con el cliente): los valores, el deslinde con L1, y si es catálogo
   administrable (tabla con FK desde CASO, como sugiere el menú Administración › Tipos de evento) o un
   enumerado dentro de CASO. Es una dimensión chica: agregarla, quitarla o cambiar su forma más
-  adelante no altera el resto del modelo. *(2026-10-29)*
+  adelante no altera el resto del modelo. *(2026-10-29)* *(2026-10-30: tentativo, se modela como
+  está: catálogo TIPO_EVENTO con los cuatro valores y FK desde CASO, como en la v1 y en
+  Administración › Tipos de evento.)*
 
 **Pendientes técnicos (agente de código):**
-- Librería de UI y estructura del front. Los componentes son propios, escritos tomando como
-  referencia los paquetes funcionales de Delta (§8). Se evaluó **Refine** (MIT; React Query + MUI +
-  React Hook Form, cercano a Delta) como base; **no está decidido**.
-- Versiones: ¿se arranca con las de Delta (React 18.2, MUI 7.1) o con las actuales? ¿Qué se gana y
-  qué se pierde? Como SIRAM no depende de los paquetes de Delta, no está atado a sus versiones;
-  usar las mismas solo facilita leer y copiar patrones.
-- Tecnología geográfica (RT.06): mapa y geocodificación ya elegidos (RN-33); falta la base geográfica
-  (¿PostGIS?).
-- **Abuso del canal ciudadano (a revisar, no se resuelve ahora).** Alguien podría enviar miles de
+- **SUGERENCIA A FUTURO · Refine** (MIT; React Query + MUI + React Hook Form, cercano a Delta). Hoy
+  el front está armado con React 19.3, MUI 7.3 y React Router 7, con componentes propios, sin Refine.
+  Sería una migración tentativa, si sucede, dentro de 4 a 6 meses. *(2026-10-30)*
+- ~~Versiones: ¿las de Delta (React 18.2, MUI 7.1) o las actuales?~~ El front ya usa las actuales; no
+  afecta al diseño. *(2026-10-30)*
+- ~~Tecnología geográfica (RT.06): falta la base geográfica (¿PostGIS?).~~ **Sin PostGIS**
+  *(2026-10-30)*: la ubicación es latitud, longitud y textos (RN-33), y alcanza con PostgreSQL común.
+- **PENDIENTE A MODELAR, IMPORTANTE, NO ENTRA AHORA · Abuso del canal ciudadano.** Alguien podría enviar miles de
   solicitudes basura. La integridad está a salvo (una solicitud no llega a un caso sin un agente),
   pero la carga de trabajo no. **Hay que revisar rate limiting** (por IP y/o por DNI);
   CAPTCHA como complemento. *(2026-10-23)*
