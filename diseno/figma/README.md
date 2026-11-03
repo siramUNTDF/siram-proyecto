@@ -7,6 +7,9 @@ variables y estilos, **sin imágenes**. Es una foto de ese día: si el archivo c
 Las pantallas de Figma son la base visual desde el 2026-11-02. Donde chocan con CONTEXTO.md, gana
 CONTEXTO: ver `choques.md`.
 
+> **Ojo:** los archivos por página describen el Figma **antes** de los cambios aplicados el mismo
+> 2026-11-03. Lo que cambió está en `cambios.md` (sección «Estado»).
+
 | Página | Id | Archivo | Contenido |
 |---|---|---|---|
 | Fundamentos | 0:1 | `fundamentos.md` | Variables (Tokens claro/oscuro, Paleta, Medidas), estilos de texto y efecto, todos los componentes |

@@ -2,8 +2,38 @@
 
 > Paso 1 del flujo acordado (memoria `project-flujo-figma-codigo`): cerrar el diseño en Figma antes de
 > que el front lo implemente. Sale de los choques confirmados en `choques.md` (sección A) y de la
-> decisión sobre E4. **No se aplicó nada todavía**: es la lista para revisar.
+> decisión sobre E4.
 > Archivo: «SIRAM — Diseño» (`XC7e02ZzIfQwmALf1RHgiZ`). Entre corchetes, el id del nodo.
+
+## Estado: aplicado el 2026-11-03
+
+Antes de empezar, Darío guardó en Figma la versión «Antes de los cambios del agente (2026-11-03)»
+para poder volver atrás. Se aplicó todo lo de abajo, con estas precisiones:
+
+- **Marca Grave** (nueva variante de Marca, `191:310`): cuadrado **rojo relleno** con «!» claro, para
+  distinguirla de Incompleto (rojo de contorno). Pendiente suma `Tipo=Graves` (`191:312`, formato
+  grande) y `Tipo=Solicitudes` (`194:948`, formato compacto, como Posibles duplicados).
+- **Borrados** de Fundamentos (sin usos fuera del Archivo v1): Estado=Grave, Marca «Posible evento
+  relacionado», Pendiente «Eventos relacionados», Botón «Vincular» (3 estados) y el set Señal de
+  coincidencia. En el Archivo v1 se **desvincularon** 20 instancias, que se siguen viendo igual.
+- **Retiradas al Archivo v1** (con el sufijo «· retirada 2026-11-03»): Comparar · evento relacionado,
+  Eventos relacionados y Nuevo caso · Aviso de caso parecido.
+- **Bandeja v2:** C-2026-0421 pasa a En seguimiento («Esperando respuesta») con la marca Grave;
+  C-2026-0398 dice «Un animal no se pudo observar (día 10)». Posibles duplicados y Búsqueda usan
+  la tabla de la Bandeja v2 (Búsqueda queda con 3 resultados: 0418, 0421, 0417).
+- **Búsqueda:** sale el **bloque Lesión entero** (también el tipo de lesión, que espera HZ05); el
+  filtro de ejemplo pasa a «Tipo de evento: Ataque con mordedura».
+- **Comparar:** el motor se reemplaza por un mensaje («Posible duplicado: la víctima tiene el mismo
+  DNI»); el grupo Lesión pasa a «T1 Tipo de evento» (sin L2 ni L3); desenlaces: Consolidar o «No es
+  duplicado: son casos distintos».
+- **Estadísticas:** Tenencia con Ajeno desconocido 52 · Ajeno conocido 22 · Propio 31 · No sabe 14 ·
+  Sin dato 8. Gravedad sin «Sin herida» y con «Excoriación» en lugar de «Desgarro» (amputación no
+  aparece: 0 casos).
+- **Demo:** E3·02 muestra la bandeja con la fila 0421 resaltada. E4 queda en 3 pasos. El **escenario
+  8** tiene portada + 2 pasos (el segundo es la vieja lámina E4·04); la portada dice «Ocho escenarios».
+
+**No se aplicó** (queda para cuando se rehaga la Demo, como estaba previsto): B.1, B.3 (canal de origen
+y línea de tiempo de la ficha), B.4, B.5, B.6 (E3·01 sigue usando Agregar animal), B.7 y B.8.
 
 Leyenda del origen: **A.n** = choque confirmado en `choques.md` · **E4** = decisión sobre la Demo E4 ·
 **B.n** = observación de la Demo (datos de ejemplo que no cierran) · **D-ER** = decisión del
