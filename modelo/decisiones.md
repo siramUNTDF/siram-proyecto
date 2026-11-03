@@ -260,3 +260,147 @@ en CONTEXTO RN-20, RN-22 y RN-34.
 - **Seguridad y políticas de la Ley 25.326 quedan pendientes.** Registrar quién consultó qué es solo
   una sugerencia: no se modela.
 
+## 2026-11-02 · Versión 2, borrador volcado en `siram.mmd`
+
+`siram.mmd` pasa a contener la **v2 completa como borrador**. **No tiene tag**: todavía no es
+contrato con el back. Vuelca todo lo de las entradas del 2026-10-23 al 2026-10-30; lo tentativo se
+modela tal como está (criterio del 2026-10-30). Las convenciones comunes (id, creado/modificado,
+sin borrado, historial espejo, «no_sabe» vs nulo) se anotan una vez al principio del archivo, y
+del historial se dibuja solo CASO_HISTORICO como ejemplo.
+
+**Entidades:** ORGANISMO, USUARIO, TIPO_EVENTO, PERSONA, CASO, SOLICITUD, ANIMAL, CASO_ANIMAL,
+DESCRIPCION, TRATAMIENTO, DENUNCIA, DOCUMENTO, COINCIDENCIA, más las tablas de historial. Salen
+PARTICIPACION y AUDITORIA.
+
+**Tomado de la demo de Figma** (`diseno/figma/demo.md`, tentativo):
+- `CASO_ANIMAL.observacion_dia10`: `pendiente|sin_novedad|murio_o_enfermo|no_se_pudo_observar`, más
+  su fecha. CONTEXTO no definía los valores.
+- `CASO.numero` (C-AAAA-NNNN) y `SOLICITUD.numero` (S-AAAA-NNNN) como identificadores visibles.
+- `CASO_ANIMAL.orden` («Animal 1 de N»).
+- Valores de `TRATAMIENTO.zona_cuerpo` según el gráfico de Inicio (piernas, manos, brazos, cara,
+  tronco, múltiples).
+
+**Supuestos del agente de diseño (a revisar por el equipo):**
+1. **La edad de la víctima va en CASO** (`victima_edad`, al momento del hecho), no en PERSONA. La
+   persona es única por DNI y puede aparecer en casos de años distintos; una edad en PERSONA queda
+   vieja y rompe la franja etaria. Contradice «la edad es de PERSONA» (CONTEXTO §9).
+2. **Nombre y apellido separados** en PERSONA, como pide el formulario inicial.
+3. **L1 (tipo de lesión) desaparece como campo:** lo absorbe TIPO_EVENTO («Me mordió → Ataque con
+   mordedura» en la demo); la ficha de Figma no tiene L1. Sale `CASO.tipo_lesion` de la v1. Cierra a
+   medias HZ05: falta confirmar con el cliente.
+4. **Ciudad como enumerado** (`ushuaia|rio_grande|tolhuin|otra`) más `ciudad_otra` en texto.
+5. **SOLICITUD:** el formulario inicial en columnas (para listar y buscar por DNI) y el detallado en un
+   JSON `detalle`, tal cual lo declaró la persona; `secciones_completas` para la cola. Token guardado
+   como hash. `motivo_descarte` en texto libre, opcional (no había nada definido).
+6. **DOCUMENTO puede colgar de SOLICITUD** (fotos que manda la persona antes de que exista el caso).
+   Exactamente una de las tres FK (caso, caso_animal, solicitud).
+7. **USUARIO:** `organismo_id` nulo para administrador y analista; `correo` como usuario de acceso;
+   `rol` = `administrador|agente|analista`. ORGANISMO.tipo = `salud|zoonosis|cadic`, que es lo que
+   usan los permisos de dominio (RN-35).
+8. **TRATAMIENTO: uno por caso** (0..1).
+9. **COINCIDENCIA suma `desenlace`** (`consolidado|vinculado|no_relacionados`). El glosario dice que
+   guarda «la decisión del agente», y la v1 no tenía dónde. El resto sigue como en la v1, tentativo.
+10. **La marca Incompleto no se guarda:** se deriva de los campos del caso (RN-25). El back puede
+    guardarla en caché para filtrar.
+11. **Un caso tiene al menos un animal** (`CASO ||--|{ CASO_ANIMAL`): todos los canales piden la
+    especie al nacer (RN-30).
+
+**El paso a `grave` es manual** (decisión de Darío, mismo día): lo hace un agente, porque alguien
+registró que el animal murió. Cargar `murio_o_enfermo` en el día 10 no cambia el estado solo.
+
+### Revisión de los supuestos con Darío (mismo día)
+- **Supuesto 1, confirmado:** la edad de la víctima va en `CASO.victima_edad`. Antes nunca se había
+  decidido: estaba en PERSONA desde la v1 sin discusión, y CONTEXTO §9 lo repetía.
+- **Supuestos 2, 5, 6 y 7: confirmados.** El 3 (L1 absorbido por TIPO_EVENTO) se mantiene, a
+  confirmar con el cliente.
+- **Supuesto 4, cambia: CIUDAD pasa a ser una tabla** (nombre, activo), por si el sistema escala.
+  `CASO.ciudad_id` FK; si la persona elige «Otra», queda `ciudad_id` nulo y el texto en
+  `ciudad_otra`. Lleva historial. **No se decidió quién la mantiene ni desde qué pantalla**: no se
+  agrega nada a la navegación.
+- **Los datos de un animal no cuentan para la marca Incompleto** (se mantiene RN-25). La descripción
+  ya es opcional en bloque (DESCRIPCION 0..1): si el animal está identificado (propio, con chip, se
+  sabe dónde está), no hace falta describirlo. Lo que está mal es la demo de Figma (E4), que marca
+  incompleto un caso con todos sus datos de caso completos.
+- **Por lo tanto, «el perro nunca se ubicó» no hace incompleto al caso**, y no hace falta un campo
+  para la aclaración de la bandeja: sale de `CASO_ANIMAL.observacion_dia10 = no_se_pudo_observar`.
+  El finalizado incompleto queda para cuando faltan **datos del caso**, p. ej. nunca se ubicó a la
+  víctima ni al contacto y faltan su edad o el tipo de lugar. Corrige el ejemplo de CONTEXTO §9.
+- **El historial se modela completo:** las 13 tablas espejo están en `siram.mmd`, generadas a partir de
+  los campos de cada entidad (USUARIO sin credenciales). Sus campos propios llevan el prefijo `hist_`
+  (`hist_id`, `hist_operacion`, `hist_fecha_hora`, `hist_usuario_id`, `hist_organismo_id`,
+  `hist_caso_contexto_id`) para no chocar con los campos copiados, p. ej. `USUARIO.organismo_id`.
+- **Día 10: «no se pudo observar» se separa en dos valores.** `ubicado_sin_acceso` (se sabe dónde está,
+  p. ej. un terreno cerrado) y `no_ubicado` (nunca se encontró). Queda
+  `pendiente|sin_novedad|murio_o_enfermo|ubicado_sin_acceso|no_ubicado`, tentativo. La aclaración de la
+  bandeja «el perro nunca se ubicó» se deriva de `no_ubicado`.
+- **Personas sin DNI argentino:** sigue pendiente, para una nueva entrevista con Salud o Zoonosis.
+- **Vacuna antirrábica:** queda sí/no; es lo único que se sabe que necesita Salud. Puede cambiar en la
+  segunda entrevista.
+- **Hueco detectado: no está definido quién finaliza un caso ni cuándo.** Por los permisos tentativos
+  (CONTEXTO §9), el estado es un dato común y lo cambia cualquier agente; el criterio (día 10) sigue
+  pendiente con Zoonosis. Tampoco hay una tabla de transiciones entre estados.
+- **COINCIDENCIA se simplifica: solo duplicados, detectados por el DNI de la víctima.** Un caso nuevo
+  cuya víctima ya es víctima de otro caso genera una coincidencia y el aviso al guardar. El agente
+  decide: **consolidar** (el mismo hecho cargado dos veces) o **distintos** (otro ataque a la misma
+  persona), con una observación libre. Campos: `caso_a_id` (el que existía), `caso_b_id` (el nuevo),
+  `desenlace` (`consolidado|distintos`, nulo = pendiente), `observacion`, `resuelta_por_usuario_id`,
+  `resuelta_en`. Se guarda para que el aviso no vuelva a salir. Salen `tipo`, `puntaje`, `senales` y
+  `revision` de la v1: sin motor por puntaje (RN-16) no hacen falta. Sin ventana de días: el agente ve
+  las dos fechas del hecho. Se compara el DNI de la **víctima**, nunca el de quien informa.
+- **El evento relacionado deja de ser una coincidencia: se deriva del animal.** Dos casos que
+  comparten un ANIMAL son del mismo animal; no hace falta guardarlo ni que un agente lo confirme. Si
+  el animal no tiene chip y se descubre que es el mismo, se **reconcilian los animales** (RN-22) y la
+  relación aparece sola. Caen el desenlace «vincular» y su reversión (RN-14), y la brecha §7.10.
+  La lista «Eventos relacionados» y su marca, si se mantienen, se calculan.
+- **Los históricos sin DNI no generan aviso.** Excepción aceptada.
+
+
+## 2026-11-03 · Estados del caso: versión mínima para la alfa
+
+Contexto: discutiendo la máquina de estados del caso aparecieron varias ideas buenas pero que no
+hacen falta para una alfa. Darío: «estamos sumando demasiada complejidad y el proyecto no esta ni en
+alfa». Se toma lo mínimo y el resto queda anotado abajo, sin modelar.
+
+**Entra en la v2:**
+- **`grave` deja de ser un estado y pasa a ser una marca derivada** (CONTEXTO RN-11): un caso es
+  grave si alguno de sus CASO_ANIMAL tiene `observacion_dia10 = murio_o_enfermo`. Lo indica Zoonosis
+  al cargar el día 10; no hay un segundo paso manual. Reemplaza el estado tentativo del 2026-10-30 y
+  el «paso manual» del 2026-11-02. Motivo: como estado, un caso grave dejaba de serlo al finalizar y
+  se perdía el dato. `CASO.estado` vuelve a `registrado|en_seguimiento|finalizado|desestimado|unificado`.
+  No suma campos.
+- **Tabla de transiciones mínima** (CONTEXTO RN-36), con estas respuestas por defecto:
+  1. No se reabre un caso `finalizado`, `desestimado` ni `unificado`; un error se corrige editando.
+  2. Sin reapertura, no hace falta motivo de reapertura.
+  3. No existe `en_seguimiento → registrado`.
+  4. «¿Un grave puede esperar algo?» desaparece: grave ya no es estado.
+  Además: `finalizado → unificado` se permite (un duplicado puede descubrirse después de cerrar).
+- El motivo de espera sigue como estaba (RN-10).
+
+**Queda para después de la alfa** (pensado el 2026-11-02/03, sin modelar):
+- **Regiones paralelas** (statechart): el caso con su estado global y un proceso por dominio que
+  avanza en paralelo: atención de la víctima (Salud), seguimiento de cada animal (Zoonosis, ya existe
+  como `observacion_dia10`) y contacto con la víctima. `→ finalizado` se permitiría cuando todas las
+  regiones llegaron a un estado final; eso respondería buena parte del criterio de finalizado.
+- **Contacto como región propia** (opción B; Darío se inclinó por ella): `pendiente → buscando →
+  contactado | no_ubicado`. Permitiría varias esperas a la vez y contar las víctimas nunca ubicadas.
+  Si entra, el motivo de espera probablemente desaparece.
+- **`TRATAMIENTO.estado`**, con valores tentativos (p. ej. `solo_curacion · profilaxis_completa ·
+  profilaxis_abandonada`). Daría la distribución de los casos cerrados según hasta dónde llegó la
+  atención, cruzable con `gravedad` de la lesión. Con la marca Grave, la atención de Salud tendría que
+  poder reabrirse.
+- **Marca «expuesto a animal en alerta»**: otro caso del mismo ANIMAL es grave y este cae dentro de
+  una ventana de exposición. Solo alcanza a los casos que comparten el ANIMAL (sin reconciliar, no salta).
+- **Vista `Casos › Graves`** (solo vigentes, como las demás listas de trabajo) e **ícono «en alerta»**
+  en la lista de Animales.
+
+**Preguntas para las entrevistas** (no frenan la v2):
+- Salud: ¿qué etapas tiene la atención y cómo se cierra? ¿Estos valores tentativos son correctos?
+- Salud y Zoonosis: si un animal muere o enferma, ¿qué otros casos del mismo animal están en riesgo
+  (la ventana de exposición)?
+
+**Ciudad sin «Otra»** (Darío, mismo día): las únicas ciudades son Ushuaia, Río Grande y Tolhuin. Sale
+`CASO.ciudad_otra` (y su copia en CASO_HISTORICO); `ciudad_id` queda como FK simple a CIUDAD. Corrige
+el supuesto 4 del 2026-11-02 y su revisión. La opción «Otra» venía de la demo de Figma (Público ›
+Dónde fue) y de RN-32: hay que quitarla de Figma.
+Un hecho fuera de las tres ciudades (estancia, ruta) **se registra igual con una de ellas**; el punto
+exacto queda en `latitud`/`longitud` (RN-33). No hace falta un valor nuevo.

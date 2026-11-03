@@ -2,7 +2,7 @@
 
 > Fuente de verdad del dominio de SIRAM. La leen el agente de diseño y el de backend; el front recibe
 > solo lo que necesita en `front/docs/` (ver §1).
-> Última actualización: 2026-10-30. Lo mantiene el agente de diseño (ver §1).
+> Última actualización: 2026-11-03. Lo mantiene el agente de diseño (ver §1).
 
 ---
 
@@ -27,10 +27,10 @@ Antes de escribir una línea de código o proponer una pantalla, asumí esto:
    que la narrativa todavía no tocó tampoco vale por sí solo: antes de usarlo hay que verificar que
    siga siendo coherente con el enfoque actual del sistema. Sirve para ver las pantallas, no para
    deducir reglas ni datos.
-4. **El modelo de datos está casi cerrado.** El modelo vigente es la **v2**, todavía en texto
-   (este documento y `modelo/decisiones.md`); se vuelca a `modelo/siram.mmd` cuando esté cerrado
-   (§7). Puede haber una v3 para detalles puntuales. Lo que hoy contiene `siram.mmd` es la v1, que
-   nunca se publicó y quedó superada: no rige.
+4. **El modelo de datos está casi cerrado.** El modelo vigente es la **v2**. Desde el 2026-11-02
+   está volcada en `modelo/siram.mmd` como **borrador sin tag** (§7): todavía no es contrato con el
+   back, y sus supuestos se revisan con el equipo (`modelo/decisiones.md`). Puede haber una v3 para
+   detalles puntuales. La v1 nunca se publicó y quedó superada.
 5. **Si algo de acá contradice lo que ibas a hacer, gana este documento.** Si creés que este
    documento está mal, no lo ignores: anotalo en `modelo/preguntas.md`.
 
@@ -281,9 +281,8 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 
 ### Estados: tres ejes independientes *(DS)*
 - **RN-09 · Estado del caso (eje 1, excluyente):** `registrado · en_seguimiento · finalizado ·
-  desestimado · unificado`. Un caso `unificado` apunta al que lo absorbió. *(2026-10-30, tentativo:
-  se suma el estado `grave`, de escalada, para cuando el animal muere durante la
-  observación; ver §9, criterio de `finalizado`.)* Un caso nace
+  desestimado · unificado`. Un caso `unificado` apunta al que lo absorbió. *(2026-11-03: `grave`
+  deja de ser un estado y pasa a ser una marca derivada, RN-11; las transiciones, en RN-36.)* Un caso nace
   `registrado`. (`sin_confirmar` y `confirmado` se eliminaron el 2026-10-08: venían del formulario
   público, donde había que confirmar lo que cargaba cualquiera; hoy un caso siempre lo registra un agente.)
 - **RN-10 · Motivo de espera (eje 2):** `contacto · respuesta · certificado`. **Solo existe si el
@@ -294,9 +293,30 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   Las listas de trabajo (Incompletos, Posibles duplicados, Eventos relacionados y sus contadores)
   muestran solo casos vigentes: sin `desestimado` ni `unificado`, igual que RN-28. Al consolidar,
   la marca de posible duplicado se resuelve y desaparece. *(decisión de diseño, 2026-10-09)*
+  **Grave** *(2026-11-03)*: alguno de los animales del caso tiene la observación del día 10 en
+  `murio_o_enfermo`. **Se deriva**: no se guarda ni la pone un agente; alcanza con que Zoonosis cargue
+  el día 10. Como es marca y no estado, el caso sigue siendo grave después de finalizar. Pide atención
+  especial al tratamiento de la víctima (§9). Por ahora no tiene lista de trabajo propia.
 - **RN-12 · Nunca colapsar los ejes en un solo campo**: se perdería información y la bandeja no
   podría filtrar por cada eje. En pantalla: estado = píldora en su columna; marcas = íconos
   pegados al identificador, a la izquierda.
+- **RN-36 · Transiciones del estado del caso.** *(tentativa, 2026-11-03: la versión mínima para la
+  alfa)* Lo que no está en la tabla no se permite, y lo hace cumplir el back.
+
+  | Desde | Hacia | Condición | Efecto |
+  |---|---|---|---|
+  | (alta) | `registrado` | — | — |
+  | `registrado` | `en_seguimiento` | Motivo de espera obligatorio (RN-10) | — |
+  | `en_seguimiento` | `en_seguimiento` | Cambia el motivo de espera | — |
+  | `registrado`, `en_seguimiento` | `finalizado` | Ninguna por ahora: el criterio sigue pendiente (§9) | Se borra el motivo de espera |
+  | `registrado`, `en_seguimiento` | `desestimado` | Motivo de desestimación obligatorio, observación opcional (§9) | Se borra el motivo de espera |
+  | `registrado`, `en_seguimiento`, `finalizado` | `unificado` | Solo al consolidar, con confirmación explícita (RN-14, RN-15) | Apunta al caso que lo absorbió; se borra el motivo de espera |
+
+  - **`finalizado`, `desestimado` y `unificado` son finales: no se reabren.** Un error se corrige
+    editando el caso, y queda en el historial (RN-27).
+  - No se vuelve a `registrado`: de `en_seguimiento` se sale finalizando, desestimando o unificando.
+  - El estado lo cambia **cualquier agente**. El analista y el administrador no lo cambian, y el
+    Sistema nunca cambia un estado solo. Todo cambio queda en el historial (RN-27).
 - **RN-13 · La denuncia no tiene estados.** Es un dato anotado en el caso. (El ciclo `recibida ·
   en_revision · vinculada · desestimada` se eliminó el 2026-10-08 junto con la cola de denuncias.)
   *(2026-10-30, EN REVISIÓN: el equipo prefiere que DENUNCIA tenga estado `pendiente_confirmacion ·
@@ -305,6 +325,12 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 
 ### Duplicados y eventos relacionados *(DS, R.13, R.14)*
 
+> **Redefinido el 2026-11-02 (ver `modelo/decisiones.md`).** El duplicado se detecta por el **DNI de
+> la víctima** y el agente decide si se consolida o si son casos distintos; COINCIDENCIA guarda esa
+> decisión. El **evento relacionado se deriva** de que dos casos compartan un ANIMAL: ya no se vincula.
+> RN-16 a RN-18 (puntaje y señales) y el «vincular» de RN-14 quedan superados; falta reescribir esta
+> sección con ese criterio.
+>
 > **En revisión (2026-10-23).** El motor de coincidencias de esta sección (RN-16 a RN-18 y la
 > entidad COINCIDENCIA) se propuso sin validarlo con el equipo ni con el cliente. El equipo diseña
 > uno nuevo; después se compara con este para rescatar lo que sirva. El **problema** de los
@@ -497,7 +523,7 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
     Toda pregunta con escala admite «No sé» (RN-23). Lo más valioso va primero,
     porque la persona puede abandonar en cualquier sección.
     1. **Dónde fue** → CASO: ubicación (pin + dirección propuesta + referencias, RN-33), ciudad (H3:
-       Ushuaia, Río Grande, Tolhuin, otra), tipo de lugar (H5: casa propia, casa ajena, vía pública,
+       Ushuaia, Río Grande o Tolhuin; no hay «otra», *2026-11-03*), tipo de lugar (H5: casa propia, casa ajena, vía pública,
        espacio público, zona rural) y hora (H2). La fecha ya vino en el inicial.
     2. **Qué pasó** → CASO y PERSONA víctima: qué pasó (mordedura, arañazo, intentó atacar sin
        lastimar, me lastimé al escapar → TIPO_EVENTO, RN-03, RN-24), cuántos animales atacaron (crea
@@ -541,10 +567,11 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 
 ## 7. Modelo de datos
 
-**Archivo canónico:** `modelo/siram.mmd`. Hoy contiene la **v1 (2026-10-08), que nunca se publicó y
-quedó superada** por la v2 (sus PARTICIPACION y AUDITORIA ya no existen; ANIMAL y DENUNCIA cambiaron).
-El modelo vigente es la **v2**, descripta en el recuadro, en este documento y en `modelo/decisiones.md`;
-se vuelca a `siram.mmd` cuando esté cerrada.
+**Archivo canónico:** `modelo/siram.mmd`. Desde el **2026-11-02** contiene la **v2 como borrador sin
+tag**: todo lo decidido hasta el 30/10, lo tentativo modelado tal como está y los supuestos del agente
+de diseño marcados «SUPUESTO» (lista en `modelo/decisiones.md`, entrada del 2026-11-02). Pasa a ser
+contrato cuando el equipo revise los supuestos y se le ponga el tag `modelo-v2`. La v1 (2026-10-08)
+nunca se publicó y quedó superada.
 
 > **Modelo v2 en preparación (2026-10-23, ampliado 2026-10-28).** La narrativa nueva (§3) y el
 > pizarrón del 28/10 cambian el modelo: SOLICITUD (nueva); PERSONA única por DNI; muere
@@ -690,9 +717,11 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   Salud** *(2026-10-30)*: depende de la narrativa; no frena el diseño.
   *(2026-10-30, decisión del equipo)*: **si el animal muere, el caso no finaliza: escala.** Sigue
   abierto en la narrativa y pide **atención especial al tratamiento** de la víctima (Salud). La
-  escalada es **un estado del caso: `grave`**, tentativo: se modela así *(2026-10-30)*. (Antecedente: Adrián pidió el 16/10 el seguimiento de rabia aparte del
-  estado.) **Si el animal nunca se ubica**, el caso puede
-  finalizar incompleto (§9, «Obligatorio para nacer vs. para estar completo»).
+  escalada es la **marca Grave**, derivada del día 10 (RN-11) *(2026-11-03; reemplaza el estado
+  `grave` del 2026-10-30 y su paso manual del 2026-11-02)*. (Antecedente: Adrián pidió el 16/10 el seguimiento de rabia aparte del
+  estado.) **Si el animal nunca se ubica**, el caso puede finalizar igual: su observación del día 10
+  queda `no_se_pudo_observar`, y eso no lo hace incompleto (los datos del animal no cuentan para la
+  marca, RN-25). *(corregido 2026-11-02)*
 - ~~**A CONFIRMAR · Lista de entes** donde se puede haber hecho una denuncia (Zoonosis, policía…).~~
   Solo Zoonosis (RN-06). La policía no se modela; muy a futuro, podría sumarse. *(2026-10-29)*
 - **A DEFINIR · ¿Cuáles son las causas posibles para desestimar un caso?** Ninguna fuente las define.
@@ -815,7 +844,9 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 - ~~**Historial en detalle**~~ Resuelto el 2026-10-29: tablas espejo con foto completa, organismo
   del momento y caso de contexto opcional (RN-27); animal absorbido (RN-22). Falta diseñar la
   **pantalla de historial**: va a ser una pantalla propia (decidido 2026-10-29), sin definir todavía.
-- **Estados del caso:** revisarlos junto con la narrativa general (RN-09, RN-10). *(2026-10-29)*
+- ~~**Estados del caso:** revisarlos junto con la narrativa general (RN-09, RN-10).~~ Transiciones
+  mínimas en RN-36 *(2026-11-03)*. Lo que se pensó y quedó para después de la alfa está en
+  `modelo/decisiones.md` (entrada del 2026-11-03).
 - **Obligatorio para nacer vs. para estar completo** (RN-25, RN-30). *(2026-10-30: el equipo lo da
   por hecho así, a revisar más a fondo.)*
   - **Para nacer:** la tabla de RN-30, según el canal. P. ej. Salud guarda sin fecha del hecho.
@@ -825,12 +856,15 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   - **Qué campos cuentan para estar completo — SUPOSICIÓN del agente de diseño, no decidida por el
     equipo; revisarla:** fecha del hecho, ciudad y lugar (RN-25), más **tipo de lugar** y **edad de
     la víctima** (datos epidemiológicos clave, RN-26) y **tipo de evento** (clasifica el caso y lo
-    hace contable). La edad es de PERSONA, pero se cuenta porque hay una sola víctima por caso.
+    hace contable). La edad de la víctima vive en el caso (`CASO.victima_edad`, al momento del hecho),
+    no en PERSONA: una persona puede estar en casos de años distintos. *(2026-11-02)*
     Zona del cuerpo (RN-26) no cuenta: vive en TRATAMIENTO.
   - **Cerrar con datos faltantes** *(decisión del equipo, 2026-10-30)*:
     - **`finalizado` + incompleto:** se permite, y **no cuenta como incompleto** en los totales. Es
-      lo esperable cuando la falta de datos es justamente lo que impidió resolverlo: nunca se ubicó
-      al perro que atacó, o nunca se ubicó a la víctima ni al contacto responsable.
+      lo esperable cuando la falta de datos es justamente lo que impidió resolverlo: p. ej. nunca se
+      ubicó a la víctima ni al contacto responsable, y faltan su edad o el tipo de lugar. *(2026-11-02:
+      «nunca se ubicó al perro» ya no es ejemplo: los datos del animal no cuentan para la marca, y el
+      animal no ubicado queda como `no_se_pudo_observar` en su día 10.)*
     - **`desestimado` + incompleto:** **sí se registra como incompleto** (conserva la marca).
     - **PENDIENTE, SE VE Y SE COMPLETA MÁS ADELANTE (delicado) · ¿Dónde se cuenta el desestimado
       incompleto?** Las estadísticas excluyen los desestimados (RN-28) y las listas de trabajo
