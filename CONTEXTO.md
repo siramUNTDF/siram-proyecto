@@ -19,14 +19,16 @@ Antes de escribir una línea de código o proponer una pantalla, asumí esto:
    *lenguaje visual*. Sus *paquetes funcionales* (componentes, queries, formularios, ventanas) son
    **referencia de solo lectura**: se estudian para escribir **componentes propios** de SIRAM, pero no
    se instalan ni se importan. SIRAM tiene repo propio y no vive en el monorepo de Delta.
-3. **El prototipo es un antecedente, superado por la narrativa.** `diseno/prototipo-siram.html`
-   (copia en revisión del original de `recursos/`, 25/09) muestra cómo se ven y se comportan las
-   pantallas principales, con datos de ejemplo realistas. Fue la referencia mientras la narrativa no
-   estaba cerrada; la narrativa partió de él y desde el 2026-10-23 lo sobrepasó. **Donde este
-   documento tomó una decisión, gana el documento y es el prototipo el que tiene que cambiar.** Lo
-   que la narrativa todavía no tocó tampoco vale por sí solo: antes de usarlo hay que verificar que
-   siga siendo coherente con el enfoque actual del sistema. Sirve para ver las pantallas, no para
-   deducir reglas ni datos.
+3. **Las pantallas están en Figma** *(desde el 2026-11-02)*. El archivo «SIRAM — Diseño»
+   (`XC7e02ZzIfQwmALf1RHgiZ`, del equipo) tiene todas las pantallas; su lectura completa y su
+   alineación con este documento están en `diseno/figma/` (el 2026-11-03 se corrigió Figma donde
+   chocaba con este documento, `diseno/figma/cambios.md`). **Donde este documento tomó una decisión,
+   gana el documento y es Figma el que tiene que cambiar.** Figma sirve para ver las pantallas, no para
+   deducir reglas ni datos. Flujo: Figma es la base de arranque; el front implementa cada vista con
+   Figma y su ficha (`front/docs/vistas/`); desde ahí **la referencia de cada vista es el código**, y
+   al final Figma se pone al día con el código.
+   El prototipo HTML (`diseno/prototipo-siram.html`, 25/09–09/10) es **histórico**: no se mantiene ni
+   se usa como referencia.
 4. **El modelo de datos está casi cerrado.** El modelo vigente es la **v2**. Desde el 2026-11-02
    está volcada en `modelo/siram.mmd` como **borrador sin tag** (§7): todavía no es contrato con el
    back, y sus supuestos se revisan con el equipo (`modelo/decisiones.md`). Puede haber una v3 para
@@ -63,9 +65,9 @@ sesión abierta en `front/` o `back/` no carga este documento.
   y registrando el porqué en `modelo/decisiones.md`.
 - **back → front:** la API REST, descripta en OpenAPI y generada por el back. Las dudas del front
   sobre datos van al back, no a este repo.
-- **proyecto → front:** el lenguaje visual, la navegación y el prototipo, entregados en
-  `front/docs/` (los mantiene el agente de diseño). Hasta que exista la API, el front trabaja con
-  datos de ejemplo con la forma del prototipo.
+- **proyecto → front:** el lenguaje visual, la navegación y una **ficha por vista**, entregados en
+  `front/docs/` (los mantiene el agente de diseño); lo visual, en Figma (§0.3). Hasta que exista la
+  API, el front trabaja con datos de ejemplo con la forma que da cada ficha.
 - `recursos/` es **material fuente de solo lectura**. No se edita.
 
 ---
@@ -113,6 +115,8 @@ casos de ataques y mordeduras de **perros y gatos** a personas en Tierra del Fue
 | 23/10/2026 | Redefinición del dominio: cuatro canales de alta y el canal ciudadano vuelve como **solicitud** (ver «Narrativa de uso»). El modelo v2 queda en preparación (§7) |
 | 28/10/2026 | Pizarrón del equipo, dos iteraciones (`recursos/pizarron-2026-10-28/`): muere PARTICIPACION, el animal tiene identidad y su seguimiento por caso vive en CASO_ANIMAL (RN-20, RN-22) |
 | 29/10/2026 | Historial con tablas espejo (RN-27), reconciliación de animales (RN-22), permisos en el servidor por fila y por campo (RN-35), Personas y Animales en Consultas (§8) |
+| 02/11/2026 | Modelo v2 en borrador (`modelo/siram.mmd`). Las pantallas de Figma pasan a ser la base visual |
+| 03/11/2026 | Figma leído entero y alineado con este documento (`diseno/figma/`). Primera ficha de vista para el front (Bandeja) |
 
 **Qué propone SIRAM** (la respuesta a la necesidad, contada como narrativa de uso con ejemplos prácticos):
 - Seguir un caso a través de sus estados.
@@ -160,14 +164,16 @@ usuario) · el formulario público · la carga de CSV.
 8. Las coincidencias entre casos, las estadísticas y el mapa salen de los casos. El motor de
    coincidencias se está rediseñando (§6).
 
-**Diseñado en el prototipo:** bandeja de casos, ficha del caso (50 campos; desde el 2026-10-29 el historial va en pantalla propia y la ficha lleva un acceso a él, RN-27),
-comparar registros (duplicado vs. relacionado), inicio con panel epidemiológico.
-(La cola de «Pendientes de validación» está diseñada pero oculta del menú. Con la narrativa del
-2026-10-23 vuelve a tener sentido como **cola de solicitudes**: su bloque «Lo que declaró la persona»
-es casi el flujo acordado. Falta ubicarla en la navegación, §9.)
-**En curso:** panel con gráficos (R.30). **Pendiente:** mapa (R.22), formulario público inicial y
-detallado (R.17) con la ubicación por pin (RN-33). **Futuro, no se resuelve ahora:** importación
-CSV (R.25).
+**Diseñado en Figma** *(2026-11-03, ver `diseno/figma/README.md`)*: inicio con panel
+epidemiológico, bandeja, incompletos, posibles duplicados, nuevo caso (formulario inicial), ficha del
+caso con sus ventanas (cambiar estado, desestimar, anotar denuncia, agregar animal, tratamiento,
+adjuntar documento), historial, comparar y consolidar, cola de solicitudes (revisar, sumar a un
+caso), formulario público inicial y detallado con el pin (RN-32, RN-33), búsqueda, estadísticas
+(R.30), exportar, personas, animales (con reconciliar), mapa (R.22) y administración (usuarios con
+roles y permisos, organismos, tipos de evento).
+**Implementado en el front:** cáscara, navegación y bandeja (versión anterior a la v2; su ficha
+nueva está en `front/docs/vistas/bandeja.md`). **Futuro, no se resuelve ahora:** importación CSV
+(R.25).
 
 ---
 
@@ -649,7 +655,8 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 
 ## 8. Lenguaje de diseño (resumen para implementar)
 
-Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
+El porqué, en `recursos/diseno/De Delta a SIRAM.html`. Los valores concretos (variables, estilos
+de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/fundamentos.md`).
 
 - **Base:** Delta `modulos/servicios-publicos`, commit `9a4cbb6a`, en `/home/dddario/front/delta`
   (ver también `componentes/theme`, `componentes/base`, `componentes/modulo`). Los componentes
@@ -688,7 +695,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   (Google Fonts). Delta usa **Gotham**, que es una licencia comprada y no se puede usar fuera de Delta.
 - **Íconos:** un solo set para todo el producto, `@mui/icons-material` (el que usa Delta).
 - **Dos audiencias:** el panel interno (denso, eficiente) usa este lenguaje. El formulario público
-  (persona recién mordida) volvió el 2026-10-23 y necesita otra piel y otro tono: pendiente de diseño.
+  (persona recién mordida) volvió el 2026-10-23 y necesita otra piel y otro tono: diseñado en Figma
+  (página Formulario público, 390 px, sin cáscara).
   Los ejemplos de un campo pueden ir de placeholder, pero se repiten en la ayuda del ícono, porque
   el placeholder desaparece al escribir.
 
@@ -847,8 +855,9 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   casos que comparten un ANIMAL ya son del mismo animal, lo que cambia la definición de evento
   relacionado (glosario, RN-14).
 - ~~**Historial en detalle**~~ Resuelto el 2026-10-29: tablas espejo con foto completa, organismo
-  del momento y caso de contexto opcional (RN-27); animal absorbido (RN-22). Falta diseñar la
-  **pantalla de historial**: va a ser una pantalla propia (decidido 2026-10-29), sin definir todavía.
+  del momento y caso de contexto opcional (RN-27); animal absorbido (RN-22). La **pantalla de
+  historial** está diseñada en Figma (línea de tiempo con filtros por entidad y «ver cómo estaba en
+  una fecha», `diseno/figma/casos.md`).
 - ~~**Estados del caso:** revisarlos junto con la narrativa general (RN-09, RN-10).~~ Transiciones
   mínimas en RN-36 *(2026-11-03)*. Lo que se pensó y quedó para después de la alfa está en
   `modelo/decisiones.md` (entrada del 2026-11-03).
@@ -917,8 +926,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
 ## 10. Mapa de recursos
 
 Todo en `recursos/` (solo lectura). Si dos fuentes se contradicen, el orden de precedencia es:
-**este documento › `modelo/siram.mmd` › «De las pantallas al modelo» › «De Delta a SIRAM» ›
-prototipo › matriz de formularios › PDF de requerimientos.** Mientras la v2 no esté volcada en
+**este documento › `modelo/siram.mmd` › Figma (`diseno/figma/`) › «De las pantallas al modelo» ›
+«De Delta a SIRAM» › prototipo (histórico) › matriz de formularios › PDF de requerimientos.** Mientras la v2 no esté volcada en
 `siram.mmd`, lo que ese archivo contiene (la v1, superada) no rige (§7).
 
 | Archivo | Qué es |
@@ -928,7 +937,7 @@ prototipo › matriz de formularios › PDF de requerimientos.** Mientras la v2 
 | `formularios/SIRAM - Comparacion de formularios….xlsx` | Matriz de 50 campos F1 vs F2, resumen de cobertura, hallazgos HZ01–HZ16, ficha de cada formulario |
 | `diseno/De Delta a SIRAM.html` | Lenguaje de diseño: qué se hereda de Delta, qué se corrige, tokens, tres ejes, motor de coincidencias, navegación |
 | `diseno/De las pantallas al modelo.html` | Modelo de datos derivado del prototipo, con la justificación de cada entidad |
-| `diseno/Bandeja de casos SIRAM.html` | Prototipo navegable original (25/09). La versión en revisión es `diseno/prototipo-siram.html` (en la raíz de este repo) |
+| `diseno/Bandeja de casos SIRAM.html` | Prototipo navegable original (25/09). **Histórico**, igual que su versión revisada `diseno/prototipo-siram.html` (en la raíz de este repo, hasta el 09/10): las pantallas vigentes están en Figma |
 | `diseno/Bandeja-casos-SIRAM.html` | Versión anterior del prototipo (histórica) |
 | `diseno/Estados del caso SIRAM.html` | Explicación visual de los tres ejes de estado |
 | `modelo-er/siram-modelo-er.svg` (+ PNG) | Versión resumida del modelo para presentar (omite DOCUMENTO y TIPO_DENUNCIA) |

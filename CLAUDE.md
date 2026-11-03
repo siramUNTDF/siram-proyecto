@@ -11,6 +11,9 @@ visual, desde el backend hasta el front. No contiene código.
 - `modelo/siram.mmd` es el contrato con el backend. Cada cambio se registra en `modelo/decisiones.md`;
   las dudas del backend llegan por `modelo/preguntas.md`.
 - `../front` y `../back` son repos aparte (ver CONTEXTO §1). No se editan desde acá salvo que el
-  usuario lo pida; lo que el front necesita saber se le entrega en `../front/docs/`.
-  Si cambia `diseno/prototipo-siram.html` o el lenguaje visual, actualizá su copia ahí.
+  usuario lo pida; lo que el front necesita saber se le entrega en `../front/docs/` (README,
+  narrativa y una ficha por vista en `vistas/`). Si cambia el lenguaje visual o una vista ya
+  entregada, actualizá su ficha ahí.
+- Las pantallas están en Figma (CONTEXTO §0.3); su lectura y los choques con CONTEXTO, en
+  `diseno/figma/`. `diseno/prototipo-siram.html` es histórico: no se mantiene.
 - No hagas commits salvo que el usuario lo pida.
