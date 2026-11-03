@@ -404,3 +404,26 @@ el supuesto 4 del 2026-11-02 y su revisión. La opción «Otra» venía de la de
 Dónde fue) y de RN-32: hay que quitarla de Figma.
 Un hecho fuera de las tres ciudades (estancia, ruta) **se registra igual con una de ellas**; el punto
 exacto queda en `latitud`/`longitud` (RN-33). No hace falta un valor nuevo.
+
+
+## 2026-11-03 · El evento relacionado se muestra en el animal, sin marca ni lista
+
+**Decisión del agente de diseño**, aprobada por Darío. Cierra lo que había quedado abierto el
+2026-11-02 («la lista “Eventos relacionados” y su marca, si se mantienen, se calculan»).
+
+- **Sale la marca «posible evento relacionado».** Desde el 2026-11-02 no es una sospecha: dos casos
+  que apuntan al mismo ANIMAL son del mismo animal. No hay nada «posible» ni nada que decidir.
+- **Sale la lista de trabajo `Casos › Eventos relacionados`**, con su contador, su chip en la bandeja
+  y su tarjeta en Inicio. Una lista de trabajo junta lo que alguien tiene que resolver, y acá no hay
+  nada que resolver.
+- **La relación se muestra en el animal:** en la ficha del caso, cada animal dice «en N casos», y eso
+  lleva a esos casos; en `Consultas › Animales › Detalle`, «Casos de este animal» (donde se ve la
+  reincidencia, RN-22). Las dos piezas ya están en Figma.
+- Si el animal no tiene chip, la relación aparece recién cuando Zoonosis reconcilia los animales
+  (RN-22). Es aceptado: la descripción no entra en el motor.
+- Si más adelante hace falta una lista («casos con un animal que aparece en otros casos»), se
+  calcula: el dato ya está. Queda para después de la alfa.
+- **No cambia el modelo**: no había campo para la marca ni para el vínculo.
+
+Quedan: marcas = incompleto · posible duplicado · grave (RN-11). Menú Casos = Bandeja · Nuevo caso ·
+Solicitudes · Posibles duplicados · Incompletos (§8).

@@ -190,10 +190,10 @@ CSV (R.25).
 | **Historial** | Las versiones anteriores de un registro: quién cambió qué, cuándo, desde qué organismo, valor anterior y nuevo. Reemplaza a la «auditoría». RN-27. |
 | **Coincidencia** | La sospecha, generada por el motor, de que dos casos están relacionados. Guarda tipo, puntaje 0–100, señales y la decisión del agente. *En revisión: el motor se rediseña (§6).* |
 | **Posible duplicado** | Coincidencia donde **coincide la persona**: el mismo incidente cargado dos veces. |
-| **Evento relacionado** | Coincidencia donde coinciden lugar, fecha y animal pero **las personas son distintas**: dos víctimas del mismo animal. |
+| **Evento relacionado** | Dos casos que apuntan al **mismo ANIMAL** (víctimas distintas del mismo animal). Se deriva: no es una coincidencia, no tiene marca ni lista; se ve en el animal («en N casos»). *(2026-11-03; antes, coincidencia de lugar, fecha y animal)* |
 | **Consolidar** | Fundir dos casos duplicados en uno. **Irreversible.** |
 | **Vincular** | Enlazar dos casos como hermanos sin fundirlos. **Reversible.** |
-| **Marca** | Señal paralela al estado (el «semáforo»): incompleto, posible duplicado, posible evento relacionado. |
+| **Marca** | Señal paralela al estado (el «semáforo»): incompleto, posible duplicado, grave. *(2026-11-03: sale «posible evento relacionado», entra «grave»)* |
 | **Motivo de espera** | Por qué un caso en seguimiento está detenido: contacto, respuesta o certificado. |
 | **Organismo** | Ente participante (Zoonosis Ushuaia, Hospital Regional, CADIC, etc.). En SIRAM es un **atributo del dato**, nunca una marca visual del sistema. |
 | **ADC** | Animal Doméstico de Compañía (término del formulario de Zoonosis, O.M. 4800). |
@@ -287,10 +287,12 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   público, donde había que confirmar lo que cargaba cualquiera; hoy un caso siempre lo registra un agente.)
 - **RN-10 · Motivo de espera (eje 2):** `contacto · respuesta · certificado`. **Solo existe si el
   caso está `en_seguimiento`.**
-- **RN-11 · Marcas (eje 3, paralelas):** incompleto · posible duplicado · posible evento
-  relacionado. Conviven entre sí y con cualquier estado. (La marca «origen ciudadano sin verificar»
-  se eliminó el 2026-10-08: un caso siempre lo registra un agente, así que nunca está «sin verificar».)
-  Las listas de trabajo (Incompletos, Posibles duplicados, Eventos relacionados y sus contadores)
+- **RN-11 · Marcas (eje 3, paralelas):** incompleto · posible duplicado · grave. Conviven entre sí
+  y con cualquier estado. (La marca «origen ciudadano sin verificar»
+  se eliminó el 2026-10-08: un caso siempre lo registra un agente, así que nunca está «sin verificar».
+  La de «posible evento relacionado» se eliminó el 2026-11-03: el evento relacionado se deriva del
+  animal y se muestra en él, RN-14 y `modelo/decisiones.md`.)
+  Las listas de trabajo (Incompletos, Posibles duplicados y sus contadores)
   muestran solo casos vigentes: sin `desestimado` ni `unificado`, igual que RN-28. Al consolidar,
   la marca de posible duplicado se resuelve y desaparece. *(decisión de diseño, 2026-10-09)*
   **Grave** *(2026-11-03)*: alguno de los animales del caso tiene la observación del día 10 en
@@ -330,6 +332,9 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 > decisión. El **evento relacionado se deriva** de que dos casos compartan un ANIMAL: ya no se vincula.
 > RN-16 a RN-18 (puntaje y señales) y el «vincular» de RN-14 quedan superados; falta reescribir esta
 > sección con ese criterio.
+> **2026-11-03 (decisión del agente de diseño, aprobada por Darío):** el evento relacionado no tiene
+> marca ni lista de trabajo; se muestra en el animal: «en N casos» en la ficha y «Casos de este animal»
+> en Consultas › Animales.
 >
 > **En revisión (2026-10-23).** El motor de coincidencias de esta sección (RN-16 a RN-18 y la
 > entidad COINCIDENCIA) se propuso sin validarlo con el equipo ni con el cliente. El equipo diseña
@@ -660,7 +665,7 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   contenido scrollea; sin breadcrumbs ni footer. Ítem activo = píldora `border-radius: 0 30px 30px 0`.
   **Dos niveles de menú, nunca tres.**
 - **Navegación:** Inicio (panel epidemiológico) · Casos (Bandeja, Nuevo caso, Solicitudes,
-  Posibles duplicados, Eventos relacionados, Incompletos) · Consultas (Búsqueda, Personas, Animales,
+  Posibles duplicados, Incompletos; *sale Eventos relacionados el 2026-11-03, RN-11*) · Consultas (Búsqueda, Personas, Animales,
   Mapa, Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento, Importar CSV).
   Personas y Animales van en Consultas porque se **consultan**, no se trabajan (lo único que SIRAM
   trabaja es el caso). Patrón lista–detalle: la tabla tiene pocas columnas (nombre, cantidad de casos)
@@ -761,8 +766,8 @@ Detalle completo en `recursos/diseno/De Delta a SIRAM.html`.
   - De la víctima son obligatorios todos los datos del formulario inicial **salvo el contacto**
     (un niño no lo tiene). Lo que se mide en SIRAM son las víctimas y los ataques.
   - **Una víctima por caso:** dos víctimas del mismo ataque son dos casos (cada una tiene su
-    seguimiento y su atención). Coincide con RN-14: los eventos relacionados se vinculan, nunca se
-    fusionan.
+    seguimiento y su atención). Coincide con RN-14: los eventos relacionados nunca se fusionan
+    (desde el 2026-11-02 tampoco se vinculan: comparten el ANIMAL).
 - ~~**Datos propios de Zoonosis y CADIC** para completar un caso.~~ Zoonosis: seguimiento del animal
   (RN-22), denuncias (RN-06) y certificado. CADIC: no tiene (RN-34). *(2026-10-30)*
 - **CONSULTAR CON SALUD · Esquema de la vacuna antirrábica.** La profilaxis post-exposición es un
