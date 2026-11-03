@@ -32,6 +32,10 @@ para poder volver atrás. Se aplicó todo lo de abajo, con estas precisiones:
 - **Demo:** E3·02 muestra la bandeja con la fila 0421 resaltada. E4 queda en 3 pasos. El **escenario
   8** tiene portada + 2 pasos (el segundo es la vieja lámina E4·04); la portada dice «Ocho escenarios».
 
+- **Agregar animal** (corregido después, al escribir las fichas): la ayuda del día 10 decía «puede
+  finalizar incompleto»; ahora: «Si murió o enfermó, el caso queda marcado Grave. Si nunca se ubica,
+  queda “No se pudo observar” y el caso se puede finalizar igual.»
+
 **No se aplicó** (queda para cuando se rehaga la Demo, como estaba previsto): B.1, B.3 (canal de origen
 y línea de tiempo de la ficha), B.4, B.5, B.6 (E3·01 sigue usando Agregar animal), B.7 y B.8.
 

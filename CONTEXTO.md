@@ -845,6 +845,37 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   como **sugerencia**: no se modela, no es necesario. Refine (§9, técnicos) es igual de opcional.
 
 **Pendientes de diseño (agente de diseño):**
+- **Huecos detectados al escribir las fichas del front** *(2026-11-03)*:
+  - **Editar el caso:** la ficha tiene «Editar», pero no hay ventana v2 para editar los datos comunes
+    (la de la v1 quedó superada). Falta diseñarla.
+  - **Registros históricos:** el agente los carga a mano (`canal_origen = historico`, pueden no tener
+    DNI, RN-21), pero el formulario inicial no tiene cómo marcarlos.
+  - **Persona que ya existe:** la persona es única por DNI (RN-20). Si al cargar un caso el DNI ya es
+    de alguien, no está definido qué muestra el formulario (¿autocompleta? ¿avisa si el nombre no
+    coincide?). Se define con el back.
+  - **Consolidar:** qué pasa con los animales, el tratamiento, las denuncias, las solicitudes y los
+    documentos del caso absorbido (¿se suman al que sobrevive o se eligen?), y cómo se emparejan los
+    animales de dos casos al consolidar o al sumar una solicitud. Qué rol puede consolidar («persona
+    autorizada», RN-15) no está en los permisos tentativos.
+  - **Sumar una solicitud sin coincidencia:** no hay pantalla para elegir el caso.
+  - **Corregir lo cargado:** faltan ventanas para editar el seguimiento de un animal y corregir una
+    denuncia (solo hay Agregar animal y Anotar denuncia); fusionar dos personas que resultaron ser la
+    misma; deshacer una reconciliación de animales hecha por error.
+  - **Reconciliar sin chip repetido:** no está el selector del otro animal.
+  - **Historial:** «Ver cómo estaba en una fecha» no tiene diseño; no está definido si el analista
+    ve el historial ni cómo se recortan los cambios de campos que un rol no ve (RN-35).
+  - **«No es duplicado» desde la ficha:** ¿resuelve directo o siempre se pasa por la comparación?
+  - **Varios animales por caso en Consultas:** las estadísticas del animal ¿cuentan animales o casos?
+    Exportar ¿una fila por caso (columnas repetidas) o una por animal?
+  - **Grave finalizado:** la tarjeta de Inicio cuenta solo casos abiertos y el chip de la Bandeja,
+    en cualquier estado. ¿Se unifica?
+  - **Exportar datos personales:** qué rol puede.
+  - **Formulario público:** qué hace «Terminar acá» en la confirmación; con «Más de 3» animales,
+    cuántas veces se repite la parte del animal; falta en Figma «¿Tiene chip?» (si es propio) y la
+    especie desde el animal 2 (RN-32); límite de fotos (cantidad y tamaño).
+  - **Administración:** cómo recibe la contraseña un usuario nuevo (con el back); qué pasa con los
+    usuarios de un organismo que se desactiva; si el tipo de organismo define permisos o solo filtra;
+    el orden de los tipos de evento.
 - **Motor de coincidencias** *(2026-10-30: es del backend; para el diseño alcanza con un **aviso** de
   que existe un registro que coincide con el caso, con el DNI como filtro principal, y las pantallas
   de comparar y consolidar se mantienen tentativas como están. COINCIDENCIA se modela como en la v1,
