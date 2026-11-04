@@ -16,4 +16,11 @@ visual, desde el backend hasta el front. No contiene código.
   entregada, actualizá su ficha ahí.
 - Las pantallas están en Figma (CONTEXTO §0.3); su lectura y los choques con CONTEXTO, en
   `diseno/figma/`. `diseno/prototipo-siram.html` es histórico: no se mantiene.
+- **Verificá antes de dar algo por hecho.** Toda decisión o cambio (en CONTEXTO, el modelo, Figma,
+  las fichas del front o cualquier entregable), propio o de un agente delegado, se contrasta antes de
+  entregarlo con las reglas de negocio (RN-xx), las decisiones vigentes de `modelo/decisiones.md` y
+  lo ya entregado (otras fichas, otras pantallas). Si choca, se corrige o se pregunta: nunca se
+  entrega con el choque adentro. «Revisado» significa revisado contra esas reglas, no solo de forma
+  (rutas, términos). Los agentes delegados reciben esta regla en su encargo, y su trabajo se verifica
+  igual antes de reportarlo como terminado.
 - No hagas commits salvo que el usuario lo pida.

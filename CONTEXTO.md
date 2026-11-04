@@ -346,14 +346,19 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 > entidad COINCIDENCIA) se propuso sin validarlo con el equipo ni con el cliente. El equipo diseña
 > uno nuevo; después se compara con este para rescatar lo que sirva. El **problema** de los
 > duplicados sigue vigente, y RN-19 ya se reusa al registrar solicitudes (RN-31).
-- **RN-14 · Duplicado y evento relacionado son resultados distintos con desenlaces opuestos.**
-  Lo que los distingue **es la persona**, no el lugar ni la fecha.
-  - Duplicado → **consolidar**: un registro único, irreversible, conserva la trazabilidad de ambos originales.
-  - Evento relacionado → **vincular**: los dos casos siguen vivos, reversible. **Nunca se fusionan:
-    fusionarlos borraría una víctima del registro epidemiológico.**
-  - Tercer desenlace: **no están relacionados** → se descarta la sospecha y se quita la marca.
+- **RN-14 · Duplicado y evento relacionado son cosas distintas.** *(reescrita 2026-11-03 con las
+  decisiones del 2026-11-02 y 2026-11-03)* Lo que los distingue **es la persona**.
+  - **Posible duplicado:** la víctima de un caso tiene el mismo DNI que la de otro. Un agente decide:
+    **consolidar** (el mismo hecho cargado dos veces: un registro único, irreversible, conserva la
+    trazabilidad de los dos) o **distintos** (otro ataque a la misma persona: se quita la marca y el
+    aviso no vuelve). COINCIDENCIA guarda la decisión y una observación opcional.
+  - **Evento relacionado:** dos casos que apuntan al mismo ANIMAL (víctimas distintas). Se deriva, no
+    se decide ni se vincula; se muestra en el animal («en N casos»). **Nunca se fusionan:** fusionarlos
+    borraría una víctima del registro epidemiológico.
 - **RN-15 · Nunca hay fusión automática.** Consolidar exige una persona autorizada y una
-  confirmación explícita («Confirmo que X e Y son la misma persona…»). *(R.14, P)*
+  confirmación explícita. *(R.14, P)* *(2026-11-03: como la persona es única por DNI (RN-20), la
+  confirmación es sobre el hecho: «Confirmo que los dos casos son el mismo incidente, cargado dos
+  veces». Hasta definir la «persona autorizada», consolida cualquier agente.)*
 - **RN-16 · La detección es por puntaje (0–100), no por regla binaria.** Señales y peso:
 
   | Señal | Peso | Nota |
@@ -618,7 +623,8 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
    - **A11 puede identificar al animal** → se queda: es una pregunta del formulario detallado del
      ciudadano (RN-32) y se guarda por animal en CASO_ANIMAL. Las secciones y preguntas de ese
      formulario se definen más adelante. *(2026-10-29)*
-   - **A medias:** L1 (HZ05, pendiente con TIPO_EVENTO en §9).
+   - ~~**A medias:** L1 (HZ05, pendiente con TIPO_EVENTO en §9).~~ **L1 desaparece como campo:** lo
+     absorbe el tipo de evento (decisiones 2026-11-02, supuesto 3). *(2026-11-03)*
 2. ~~**Booleanos que no admiten «No sabe»** (`reincidente`, `atencion_medica`) — ver RN-23.~~ Ninguno
    queda: `atencion_medica` se deriva de TRATAMIENTO y `reincidente` se descartó. *(2026-10-29)*
 3. ~~Fecha de la denuncia (H0)~~ Resuelta en v1: `DENUNCIA.fecha`.
@@ -646,10 +652,9 @@ El boceto ER original del equipo (`recursos/boceto-equipo/`) está **superado** 
 9. ~~**Registro histórico:** RN-21 exige DNI salvo en registros históricos; el modelo tiene que poder
    distinguirlos (p. ej. por origen o lote de importación) para aplicar la obligatoriedad.~~
    Resuelta: `canal_origen = historico` (RN-30). *(2026-10-29)*
-10. **Vínculos entre casos:** COINCIDENCIA guarda la sospecha y la decisión; falta confirmar que
-   alcanza para representar el vínculo vigente (y su reversión) de un evento relacionado. Con el
-   animal con identidad (RN-22), dos casos que comparten un ANIMAL ya son del mismo animal: revisar
-   si eso reemplaza parte del vínculo.
+10. ~~**Vínculos entre casos.**~~ Resuelta (decisiones 2026-11-02 y 2026-11-03): COINCIDENCIA es solo
+   para duplicados (desenlace `consolidado|distintos`); el evento relacionado se deriva de compartir un
+   ANIMAL y se muestra en el animal, sin vínculo ni marca.
 
 ---
 
@@ -673,7 +678,8 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   **Dos niveles de menú, nunca tres.**
 - **Navegación:** Inicio (panel epidemiológico) · Casos (Bandeja, Nuevo caso, Solicitudes,
   Posibles duplicados, Incompletos; *sale Eventos relacionados el 2026-11-03, RN-11*) · Consultas (Búsqueda, Personas, Animales,
-  Mapa, Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento, Importar CSV).
+  Mapa, Estadísticas, Exportar) · Administración (Usuarios, Organismos, Tipos de evento; *sale Importar
+  CSV: no hay importación, §9*).
   Personas y Animales van en Consultas porque se **consultan**, no se trabajan (lo único que SIRAM
   trabaja es el caso). Patrón lista–detalle: la tabla tiene pocas columnas (nombre, cantidad de casos)
   y el detalle muestra los datos y **todos sus casos** (RN-20, RN-22). DNI y contacto, solo en el
@@ -733,8 +739,9 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   escalada es la **marca Grave**, derivada del día 10 (RN-11) *(2026-11-03; reemplaza el estado
   `grave` del 2026-10-30 y su paso manual del 2026-11-02)*. (Antecedente: Adrián pidió el 16/10 el seguimiento de rabia aparte del
   estado.) **Si el animal nunca se ubica**, el caso puede finalizar igual: su observación del día 10
-  queda `no_se_pudo_observar`, y eso no lo hace incompleto (los datos del animal no cuentan para la
-  marca, RN-25). *(corregido 2026-11-02)*
+  queda `no_ubicado`, y eso no lo hace incompleto (los datos del animal no cuentan para la
+  marca, RN-25). *(corregido 2026-11-02)* Valores del día 10 (tentativos, decisiones 2026-11-02):
+  `pendiente · sin_novedad · murio_o_enfermo · ubicado_sin_acceso · no_ubicado`.
 - ~~**A CONFIRMAR · Lista de entes** donde se puede haber hecho una denuncia (Zoonosis, policía…).~~
   Solo Zoonosis (RN-06). La policía no se modela; muy a futuro, podría sumarse. *(2026-10-29)*
 - **A DEFINIR · ¿Cuáles son las causas posibles para desestimar un caso?** Ninguna fuente las define.
@@ -846,8 +853,16 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
 
 **Pendientes de diseño (agente de diseño):**
 - **Huecos detectados al escribir las fichas del front** *(2026-11-03)*:
-  - **Editar el caso:** la ficha tiene «Editar», pero no hay ventana v2 para editar los datos comunes
-    (la de la v1 quedó superada). Falta diseñarla.
+  *Decididos tentativamente en las fichas* (ver `diseno/correcciones-fichas.md` y
+  `diseno/decisiones-fichas.md`; se revisan con el equipo): la ventana **Editar** del caso; editar el
+  seguimiento de un animal y corregir una denuncia (misma ventana en modo edición); «No es duplicado»
+  con observación opcional, igual desde la ficha y desde la comparación; «Es otro ataque, guardar
+  igual» = desenlace `distintos`; sumar sin coincidencia pidiendo el número de caso; «Graves» = casos
+  graves registrados o en seguimiento (igual en Inicio y Bandeja); el analista no ve el historial; las
+  estadísticas del animal cuentan animales; Exportar, una fila por caso con columnas por animal; fotos
+  del formulario público hasta 3 por animal; «Terminar acá» en la confirmación → Gracias.
+  *Siguen abiertos:*
+  - **Editar el caso en Figma:** la ventana está especificada en la ficha del front, pero no dibujada.
   - **Registros históricos:** el agente los carga a mano (`canal_origen = historico`, pueden no tener
     DNI, RN-21), pero el formulario inicial no tiene cómo marcarlos.
   - **Persona que ya existe:** la persona es única por DNI (RN-20). Si al cargar un caso el DNI ya es
@@ -857,25 +872,16 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
     documentos del caso absorbido (¿se suman al que sobrevive o se eligen?), y cómo se emparejan los
     animales de dos casos al consolidar o al sumar una solicitud. Qué rol puede consolidar («persona
     autorizada», RN-15) no está en los permisos tentativos.
-  - **Sumar una solicitud sin coincidencia:** no hay pantalla para elegir el caso.
-  - **Corregir lo cargado:** faltan ventanas para editar el seguimiento de un animal y corregir una
-    denuncia (solo hay Agregar animal y Anotar denuncia); fusionar dos personas que resultaron ser la
-    misma; deshacer una reconciliación de animales hecha por error.
+  - **Corregir lo cargado:** fusionar dos personas que resultaron ser la misma; deshacer una
+    reconciliación de animales hecha por error.
   - **Reconciliar sin chip repetido:** no está el selector del otro animal.
-  - **Historial:** «Ver cómo estaba en una fecha» no tiene diseño; no está definido si el analista
-    ve el historial ni cómo se recortan los cambios de campos que un rol no ve (RN-35).
-  - **«No es duplicado» desde la ficha:** ¿resuelve directo o siempre se pasa por la comparación?
-  - **Varios animales por caso en Consultas:** las estadísticas del animal ¿cuentan animales o casos?
-    Exportar ¿una fila por caso (columnas repetidas) o una por animal?
-  - **Grave finalizado:** la tarjeta de Inicio cuenta solo casos abiertos y el chip de la Bandeja,
-    en cualquier estado. ¿Se unifica?
+  - **Historial:** «Ver cómo estaba en una fecha» no tiene diseño; cómo se recortan los cambios de
+    campos que un rol no ve (RN-35).
   - **Exportar datos personales:** qué rol puede.
-  - **Formulario público:** qué hace «Terminar acá» en la confirmación; con «Más de 3» animales,
-    cuántas veces se repite la parte del animal; falta en Figma «¿Tiene chip?» (si es propio) y la
-    especie desde el animal 2 (RN-32); límite de fotos (cantidad y tamaño).
+  - **Formulario público:** con «Más de 3» animales, cuántos fueron en total; falta en Figma «¿Tiene
+    chip?» (si es propio) y la especie desde el animal 2 (RN-32).
   - **Administración:** cómo recibe la contraseña un usuario nuevo (con el back); qué pasa con los
-    usuarios de un organismo que se desactiva; si el tipo de organismo define permisos o solo filtra;
-    el orden de los tipos de evento.
+    usuarios de un organismo que se desactiva; el orden de los tipos de evento.
 - **Motor de coincidencias** *(2026-10-30: es del backend; para el diseño alcanza con un **aviso** de
   que existe un registro que coincide con el caso, con el DNI como filtro principal, y las pantallas
   de comparar y consolidar se mantienen tentativas como están. COINCIDENCIA se modela como en la v1,
@@ -909,7 +915,7 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
       lo esperable cuando la falta de datos es justamente lo que impidió resolverlo: p. ej. nunca se
       ubicó a la víctima ni al contacto responsable, y faltan su edad o el tipo de lugar. *(2026-11-02:
       «nunca se ubicó al perro» ya no es ejemplo: los datos del animal no cuentan para la marca, y el
-      animal no ubicado queda como `no_se_pudo_observar` en su día 10.)*
+      animal no ubicado queda como `no_ubicado` en su día 10.)*
     - **`desestimado` + incompleto:** **sí se registra como incompleto** (conserva la marca).
     - **PENDIENTE, SE VE Y SE COMPLETA MÁS ADELANTE (delicado) · ¿Dónde se cuenta el desestimado
       incompleto?** Las estadísticas excluyen los desestimados (RN-28) y las listas de trabajo
@@ -924,7 +930,9 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
 - ~~**«Fecha de novedad» de la bandeja.**~~ Es la **última modificación** del caso, el campo
   automático de RN-27, para que suba lo que alguien tocó recientemente. *(2026-10-29; antes «derivarla
   de AUDITORIA»)* El prototipo todavía ordena por número de caso (orden de registro).
-- **Columna «Lesión» / tipo de lesión (HZ05).** Hoy mezcla L1 (Mordedura, Arañazo) con T1 («Lesión
+- **Columna «Lesión» / tipo de lesión (HZ05).** *(2026-11-03: L1 desapareció como campo, lo absorbe
+  el tipo de evento (decisiones 2026-11-02, supuesto 3); queda pendiente solo la lista de valores de
+  Tipo de evento con el cliente. Lo que sigue es el antecedente.)* Hoy mezcla L1 (Mordedura, Arañazo) con T1 («Lesión
   compatible», categoría de denuncia del F2). Falta definir la lista de valores de SIRAM y la
   traducción de cada formulario. Atado a esto: el catálogo **«Tipo de evento»** (T1; antes «Tipo de
   denuncia», renombrado el 2026-10-08) clasifica al caso. Propuesta de valores, a validar: ataque con

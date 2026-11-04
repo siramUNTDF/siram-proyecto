@@ -36,6 +36,26 @@ para poder volver atrás. Se aplicó todo lo de abajo, con estas precisiones:
   finalizar incompleto»; ahora: «Si murió o enfermó, el caso queda marcado Grave. Si nunca se ubica,
   queda “No se pudo observar” y el caso se puede finalizar igual.»
 
+**Segunda pasada (2026-11-03, tras la revisión de coherencia de las fichas):** corrige cambios de la
+primera pasada que no respetaban `modelo/decisiones.md` del 2026-11-02 (ver `../correcciones-fichas.md`).
+- Día 10 con 5 valores en Agregar animal: «Ubicado, sin acceso» y «No se ubicó» en lugar de «No se
+  pudo observar»; la Bandeja dice «Un animal no se ubicó».
+- Ficha v2 (y vista Salud): vuelve la historia original de C-2026-0418 (S-2026-0031 sumada el 12/09,
+  D1 «Sí»), tipo de lugar «Sin dato» (explica la marca Incompleto), aviso de duplicado solo por DNI,
+  día 10 del animal 2 «No se ubicó», «7 cambios», denuncia sin ente.
+- Estadísticas: sale el tipo de lesión (L1 ya no existe); queda «Gravedad de la lesión»; el indicador
+  de vacunación cuenta animales. Tipos de evento: sale la mención a L1.
+- Organismos: tipos Salud · Zoonosis · CADIC; salen Ministerio de Salud TDF y UNTDF. Usuarios:
+  administrador y analista («Consulta») sin organismo. Personas: sin edad. Animales: el absorbido,
+  0 casos.
+
+**Tercera pasada (2026-11-03, segunda revisión de las fichas):** historia de ejemplo corregida
+(0402 registrado el 12/09 14:50; última modificación de 0418 el 22/09 por M. Acosta; 13 cambios;
+0411 unificado en 0408); persona única por DNI en Comparar (filas de la víctima iguales, la
+confirmación habla del mismo hecho) y en Posibles duplicados; historial: Carla Sosa editada desde
+Consultas › Personas; D. Marchisoney como agente de Zoonosis; Estadísticas con 129 animales; Exportar
+con 33/38 columnas; contadores de Usuarios.
+
 **No se aplicó** (queda para cuando se rehaga la Demo, como estaba previsto): B.1, B.3 (canal de origen
 y línea de tiempo de la ficha), B.4, B.5, B.6 (E3·01 sigue usando Agregar animal), B.7 y B.8.
 
