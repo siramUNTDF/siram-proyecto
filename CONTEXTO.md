@@ -2,7 +2,7 @@
 
 > Fuente de verdad del dominio de SIRAM. La leen el agente de diseño y el de backend; el front recibe
 > solo lo que necesita en `front/docs/` (ver §1).
-> Última actualización: 2026-11-03. Lo mantiene el agente de diseño (ver §1).
+> Última actualización: 2026-11-04. Lo mantiene el agente de diseño (ver §1).
 
 ---
 
@@ -301,6 +301,9 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   Las listas de trabajo (Incompletos, Posibles duplicados y sus contadores)
   muestran solo casos vigentes: sin `desestimado` ni `unificado`, igual que RN-28. Al consolidar,
   la marca de posible duplicado se resuelve y desaparece. *(decisión de diseño, 2026-10-09)*
+  **La marca de posible duplicado solo se muestra mientras los dos casos del par estén vigentes**
+  *(2026-11-04)*: si uno se desestima, no queda nada que consolidar; la coincidencia sigue sin
+  decisión (ver `modelo/decisiones.md`).
   **Grave** *(2026-11-03)*: alguno de los animales del caso tiene la observación del día 10 en
   `murio_o_enfermo`. **Se deriva**: no se guarda ni la pone un agente; alcanza con que Zoonosis cargue
   el día 10. Como es marca y no estado, el caso sigue siendo grave después de finalizar. Pide atención

@@ -427,3 +427,20 @@ exacto queda en `latitud`/`longitud` (RN-33). No hace falta un valor nuevo.
 
 Quedan: marcas = incompleto · posible duplicado · grave (RN-11). Menú Casos = Bandeja · Nuevo caso ·
 Solicitudes · Posibles duplicados · Incompletos (§8).
+
+
+## 2026-11-04 · La marca de posible duplicado necesita los dos casos vigentes
+
+**Decisión del agente de diseño**, aprobada por Darío. Sale de la revisión de la demo del front: si
+se desestimaba uno de los dos casos de un posible duplicado, el otro quedaba con la marca y en la
+lista Posibles duplicados sin salida, porque un caso desestimado no se consolida (RN-36) y «No es
+duplicado» no corresponde (no es «otro ataque a la misma persona»).
+
+- **La marca «posible duplicado» se deriva solo si los dos casos del par están vigentes** (ni
+  `desestimado` ni `unificado`). Misma lógica que las listas de trabajo (RN-11, RN-28): si uno salió
+  del registro, no hay nada que consolidar.
+- **La COINCIDENCIA queda sin desenlace** (`pendiente`): nadie decidió nada, y no se registra una
+  decisión que no se tomó. Como `desestimado` es final (RN-36), el par no vuelve a ser resoluble.
+- Consolidar sigue siendo solo entre casos `registrado`, `en_seguimiento` o `finalizado` (RN-36).
+- **No cambia el modelo**: la marca ya era derivada.
+
