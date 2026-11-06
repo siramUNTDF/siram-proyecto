@@ -29,6 +29,7 @@ erDiagram
     PERSONA |o--o{ CASO : "es contacto responsable en"
     TIPO_EVENTO |o--o{ CASO : clasifica
     CIUDAD |o--o{ CASO : ubica
+    CIUDAD |o--o{ SOLICITUD : ubica
     CASO |o--o{ CASO : "unificado en"
 
     CASO |o--o{ SOLICITUD : "procede de"
@@ -98,7 +99,7 @@ erDiagram
         id tipo_evento_id FK "T1"
         date fecha_hecho "H1; Salud puede no tenerla (RN-30)"
         time hora_hecho "H2"
-        id ciudad_id FK "H3; sin opción «Otra» (2026-11-03)"
+        id ciudad_id FK "H3; sin opción «Otra» (2026-11-03). Del formulario inicial, obligatoria en los cuatro canales (RN-30, 2026-11-06); la base la admite vacía (históricos)"
         decimal latitud "RN-33, sin PostGIS"
         decimal longitud
         string direccion "H4"
@@ -112,7 +113,7 @@ erDiagram
         id id PK
         string numero UK "S-AAAA-NNNN, visible para la persona"
         enum estado "pendiente|descartada|registrada (RN-31)"
-        id caso_id FK "registrada <=> tiene caso"
+        id caso_id FK "registrada <=> tiene caso; máximo 2 por caso, y solo se suma a un caso registrado o en_seguimiento (RN-31, 2026-11-06)"
         bool es_victima "¿Sos quien sufrió el ataque?"
         string informante_nombre
         string informante_apellido
@@ -123,8 +124,9 @@ erDiagram
         string victima_apellido
         string victima_dni
         date fecha_hecho
+        id ciudad_id FK "H3, del formulario inicial; obligatoria (RN-30, 2026-11-06)"
         enum especie "perro|gato (del primer animal)"
-        json detalle "formulario detallado tal cual, por sección (RN-32). SUPUESTO: JSON, no columnas"
+        json detalle "formulario detallado tal cual, por sección (RN-32). SUPUESTO: JSON, no columnas. Al resolverla, cada animal guarda su caso_animal_id (2026-11-06)"
         int secciones_completas "0 a 4"
         string token_hash "token del detallado; nunca el número (RN-32)"
         datetime token_vence_en "aprox. 1 h"
@@ -225,7 +227,7 @@ erDiagram
         string nombre
         enum tipo
         bool activo
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -239,7 +241,7 @@ erDiagram
         string correo
         enum rol
         bool activo
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -250,7 +252,7 @@ erDiagram
         id id
         string nombre
         bool activo
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -262,7 +264,7 @@ erDiagram
         string nombre
         string descripcion
         bool activo
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -277,7 +279,7 @@ erDiagram
         string telefono
         string correo
         string domicilio
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -308,7 +310,7 @@ erDiagram
         enum hizo_denuncia
         enum motivo_no_denuncia
         id registrado_por_usuario_id
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -321,7 +323,7 @@ erDiagram
         string chip
         bool vigente
         id absorbido_por_animal_id
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -341,7 +343,7 @@ erDiagram
         enum observacion_dia10
         date observacion_dia10_fecha
         string observaciones
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -356,7 +358,7 @@ erDiagram
         string color
         enum conoce_raza
         string raza
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -375,7 +377,7 @@ erDiagram
         bool sutura
         string observaciones
         id cargado_por_usuario_id
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -391,7 +393,7 @@ erDiagram
         enum estado
         string observaciones
         id anotada_por_usuario_id
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -405,7 +407,7 @@ erDiagram
         id solicitud_id
         string nombre_archivo
         string url
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"
@@ -420,7 +422,7 @@ erDiagram
         string observacion
         id resuelta_por_usuario_id
         datetime resuelta_en
-        enum hist_operacion "creacion|modificacion|baja_logica"
+        enum hist_operacion "creacion|modificacion|baja_logica|consolidacion"
         datetime hist_fecha_hora
         id hist_usuario_id FK "nulo = Sistema"
         id hist_organismo_id FK "el del usuario en ese momento, copiado"

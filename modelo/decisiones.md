@@ -297,7 +297,7 @@ PARTICIPACION y AUDITORIA.
 7. **USUARIO:** `organismo_id` nulo para administrador y analista; `correo` como usuario de acceso;
    `rol` = `administrador|agente|analista`. ORGANISMO.tipo = `salud|zoonosis|cadic`, que es lo que
    usan los permisos de dominio (RN-35).
-8. **TRATAMIENTO: uno por caso** (0..1).
+8. **TRATAMIENTO: uno por caso** (0..1). *(Confirmado por Darío el 2026-11-06.)*
 9. **COINCIDENCIA suma `desenlace`** (`consolidado|vinculado|no_relacionados`). El glosario dice que
    guarda «la decisión del agente», y la v1 no tenía dónde. El resto sigue como en la v1, tentativo.
 10. **La marca Incompleto no se guarda:** se deriva de los campos del caso (RN-25). El back puede
@@ -444,3 +444,132 @@ duplicado» no corresponde (no es «otro ataque a la misma persona»).
 - Consolidar sigue siendo solo entre casos `registrado`, `en_seguimiento` o `finalizado` (RN-36).
 - **No cambia el modelo**: la marca ya era derivada.
 
+
+
+## 2026-11-06 · La ciudad entra al formulario inicial; el mapa sin tocar no guarda punto
+
+**Decisiones de Darío**, al revisar el formulario público de la demo del front.
+
+- **Ciudad en el formulario inicial, obligatoria en los cuatro canales** (RN-30). Una solicitud que
+  terminaba en el inicial llegaba sin ciudad, y un caso sin saber dónde fue no sirve. Opciones
+  Ushuaia · Río Grande · Tolhuin, sin «Otra» (se marca la más cercana). Se quita de la parte «¿Dónde
+  fue?» del detallado (RN-32), donde el mapa arranca centrado en la ciudad del inicial.
+- **Cambia el modelo:** `SOLICITUD.ciudad_id` (FK a CIUDAD), porque la ciudad deja de viajar en el
+  `detalle` JSON y es un dato del inicial, como `fecha_hecho`. `CASO.ciudad_id` sigue admitiendo
+  vacío en la base: la obligatoriedad vive en el formulario (RN-30) y los históricos pueden no
+  tenerla.
+- **Sin gesto no hay punto.** En «¿Dónde fue?» el mapa arranca oscurecido hasta el primer gesto de la
+  persona; si no lo movió, la parte se guarda sin coordenadas y no se propone dirección. Antes se
+  guardaba el centro de la ciudad como lugar del hecho. Refuerza RN-33 (el punto siempre lo pone una
+  persona). No cambia el modelo: `latitud` y `longitud` ya eran opcionales.
+- **RN-25 no cambia:** la ciudad sigue contando para la marca Incompleto; en los casos nuevos ya no
+  puede faltar.
+- **Revisar solicitud muestra el pin** en un mapa de solo lectura, si la solicitud tiene coordenadas
+  (solo pantalla, no cambia el modelo).
+
+
+## 2026-11-06 · Cada animal de la solicitud apunta a su animal del caso
+
+**Propuesta del agente de diseño, aprobada por Darío.** Sale de una pregunta al front: cómo llega al
+caso lo que la persona declaró del dueño («De alguien que conozco»: nombre y contacto en texto libre).
+
+- **El problema:** lo declarado sobre el dueño y el chip no se copia a CASO_ANIMAL (RN-32: lo confirma
+  Zoonosis), pero la ficha del caso lo muestra en el animal correspondiente («Según la solicitud S-…»).
+  Al **sumar** una solicitud a un caso que ya tenía animales, el agente decide qué animal de la
+  solicitud es cuál del caso, y esa decisión no quedaba guardada: el back no podía saber en qué animal
+  mostrarlo.
+- **Cambia el modelo (mínimo):** al resolver la solicitud, cada animal de `SOLICITUD.detalle` guarda
+  su `caso_animal_id`. Al **registrar** lo pone el back (el animal creado con el caso); al **sumar**,
+  según el emparejamiento que manda el front (animal existente o nuevo). Mientras está pendiente, o si
+  se descarta, no existe. No hace falta tabla nueva: la solicitud ya se escribe al resolverla
+  (`estado`, `caso_id`, `resuelta_en`).
+- **Quién empareja** *(Darío, mismo día)*: el agente, en la pantalla Sumar. Por cada animal de la
+  solicitud elige uno del caso de la misma especie, sin repetir, o «es otro animal» (se agrega).
+  Viene preelegido solo si hay un animal de cada lado y de la misma especie. El sistema no lo adivina
+  por la descripción (RN-22). Al consolidar casos sigue abierto.
+- **«No va al caso»** *(Darío, mismo día)*: tercera opción del emparejamiento, para un animal declarado
+  que Zoonosis verifica que no existe o no corresponde. No se crea en el caso (sin seguimiento
+  colgado) y su `caso_animal_id` queda vacío; lo declarado sigue en la solicitud (RN-06b, RN-31).
+- **Después de la alfa:** emparejar aunque la especie no coincida (la persona dijo «gato» y es el perro
+  del caso). El animal del caso conservaría su especie y el error quedaría solo en la solicitud. Por
+  ahora ese caso se resuelve con «No va al caso» y, si sirve, cargando lo declarado a mano.
+- **Después de la alfa: «Quitar animal» del caso** *(Darío, mismo día)*. Hoy un animal que no iba
+  (p. ej. el caso nació de una solicitud que contó tres perros y eran dos, o se agregó por error) no se
+  puede sacar. Propuesta: baja lógica en CASO_ANIMAL (RN-06b; queda en el historial como baja lógica,
+  RN-27), acción «Quitar del caso» en la ficha. Los quitados no cuentan para la marca Grave, «en N
+  casos», estadísticas, mapa ni exportar, y no se ofrecen al emparejar. No se puede quitar el último
+  animal (todo caso tiene al menos uno, RN-30). Lo quita quien puede agregarlo (cualquier agente:
+  datos comunes, §9). No cambia `siram.mmd` hasta que se tome.
+- **Solo Zoonosis ve y resuelve las solicitudes** *(Darío, mismo día; reemplaza «cualquier agente»
+  de los permisos tentativos de CONTEXTO §9)*. Salud registra casos por el tratamiento y nunca revisó
+  lo que mandaban los ciudadanos; CADIC se interesa por los datos y los registros, no por decidir
+  sobre ellos. Zoonosis atiende al público, anota las denuncias, sigue al animal y es el único ente
+  que ve dueño y chip, así que lo declarado sobre ellos queda solo a su vista también en la solicitud
+  (RN-35). Los casos que nacen de solicitudes los ven todos en la Bandeja, como cualquier caso. No
+  cambia el modelo: es un permiso por fila (RN-35).
+
+
+## 2026-11-06 · Hasta dos solicitudes por caso, y solo a casos abiertos
+
+**Decisiones de Darío.** Salen de preguntar cuántas solicitudes pueden declarar sobre el mismo animal.
+
+- **Máximo 2 solicitudes por caso** (antes 0..N). Las dos razones reales para más de una son que la
+  persona mande dos veces (el detallado es una sola oportunidad) o que informen dos personas (la
+  víctima y su madre). Una tercera ya indica basura y se descarta. El agente de diseño advirtió que el
+  tope no frena el abuso (la basura llega igual a la cola; eso es rate limiting, §9) y que una tercera
+  legítima no tendría cómo sumarse; se decidió el tope igual, por no dejar el caso abierto a recibir
+  solicitudes sin límite.
+- **Solo se suma a casos `registrado` o `en_seguimiento`.** Los estados finales no se reabren (RN-36).
+- **Lo declarado sobre un animal por varias solicitudes se muestra todo**, la más reciente primero (a lo
+  sumo dos). «Gana la más reciente» es solo para D1 y D3 (RN-07): lo declarado del dueño y el chip son
+  pistas para Zoonosis y pueden completarse entre sí.
+- **La referencia «Según la solicitud S-…» queda siempre a la vista**, también después de que Zoonosis
+  confirma el dueño o el chip: es la procedencia y permite comparar lo dicho con lo confirmado.
+- **Cambia el modelo solo en la regla** (comentario de `SOLICITUD.caso_id`); la estructura no cambia.
+  El tope y los estados los hace cumplir el back.
+- **Al consolidar, las solicitudes del absorbido se quedan en el absorbido** *(Darío, mismo día)*. No
+  se repuntan al que sobrevive: el agente ya elige campo por campo qué sobrevive (RN-19), así que el
+  sobreviviente se queda con la mayor información, y el rastro completo sigue en el caso `unificado`
+  (no se borra ni se vacía, RN-06b), al que se llega por `unificado_en_caso_id`. Así el sobreviviente
+  nunca pasa de dos solicitudes. No cambia el modelo.
+- **Al consolidar, el tratamiento: queda uno, el que tenga más datos** *(Darío, mismo día)*. Un caso
+  tiene a lo sumo un TRATAMIENTO (0..1). Si solo uno de los dos casos lo tiene, pasa al sobreviviente;
+  si los dos, queda **entero** el que tenga más campos cargados (empate: el de última modificación más
+  reciente), sin mezclar campos. Es automático dentro de la consolidación (que sigue siendo explícita,
+  RN-15), y así nadie tiene que ver el detalle para elegir: Zoonosis y CADIC solo ven si existe (RN-35,
+  §9). El otro queda en el absorbido; si reemplaza uno del sobreviviente, el anterior queda en su
+  historial (RN-27). No cambia el modelo.
+
+
+## 2026-11-06 · Zoonosis decide sobre los duplicados
+
+**Decisión de Darío.** Zoonosis ya resuelve las solicitudes, anota las denuncias, sigue al animal y
+reconcilia animales: es quien cuida la identidad de los registros.
+
+- **La «persona autorizada» de RN-15 es un agente de Zoonosis.** Solo Zoonosis consolida y marca «No
+  es duplicado». Los demás agentes ven la marca, el aviso, la lista y la comparación, sin las acciones.
+- **Nuevo caso con DNI repetido:** Salud y CADIC tienen «Abrir C-…» y «Guardar y revisar después»;
+  «Es otro ataque, guardar igual» (desenlace `distintos`) queda solo para Zoonosis.
+- **La consolidación es una operación con reglas fijas, no una edición del agente.** Puede mover datos
+  de dominio de otro ente (el tratamiento, entrada anterior) porque nadie elige su contenido. En el
+  historial queda como consolidación.
+- **El caso que sobrevive lo avisa** (pedido de Darío, para que Salud entienda por qué su tratamiento
+  puede ser otro): mensaje de información en la ficha, «Este caso absorbió a C-… (consolidado el … por
+  …, Zoonosis). Parte de sus datos vienen de ese caso», con enlace al unificado.
+- **Supuesto 8 del 2026-11-02 confirmado:** un TRATAMIENTO por caso, como máximo (0..1).
+- **`hist_operacion` suma `consolidacion`** (en todas las tablas espejo). Lo que cambia al consolidar
+  queda como consolidación y no como `modificacion` del agente, para que, p. ej., Salud vea que su
+  tratamiento cambió por una consolidación y no por una edición a mano. Es el único cambio al modelo
+  de esta entrada; lo demás son permisos (RN-35).
+
+## 2026-11-06 · Considerado y descartado: estado «registrado no verificado»
+
+Darío planteó un estado para los casos que cargan Salud o CADIC hasta que Zoonosis los verifique. Se
+descarta (acuerdo con Darío):
+
+- Ya existió (`sin_confirmar`/`confirmado`, eliminados el 2026-10-08) y venía del formulario público;
+  hoy lo dudoso entra como solicitud y Zoonosis la verifica antes de que haya caso (RN-31).
+- La duda de duplicado ya es la marca **posible duplicado** (por DNI; sin coincidencia no hay con qué
+  comparar), y la de veracidad es **desestimar** con «hecho inexistente o no verificable».
+- Mezclaría el estado con las marcas (RN-12) y haría de Zoonosis una aduana de todo caso (RN-01).
+- No cambia el modelo.

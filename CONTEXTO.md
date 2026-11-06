@@ -2,7 +2,7 @@
 
 > Fuente de verdad del dominio de SIRAM. La leen el agente de diseño y el de backend; el front recibe
 > solo lo que necesita en `front/docs/` (ver §1).
-> Última actualización: 2026-11-04. Lo mantiene el agente de diseño (ver §1).
+> Última actualización: 2026-11-06. Lo mantiene el agente de diseño (ver §1).
 
 ---
 
@@ -145,14 +145,14 @@ usuario) · el formulario público · la carga de CSV.
 2. El hecho entra a SIRAM por uno de **cuatro canales**: Salud, Zoonosis, CADIC o el **canal
    ciudadano** (formulario público). Todos empiezan con el mismo **formulario inicial**, corto a
    propósito (un cuestionario de 30 preguntas es invasivo para alguien recién mordido): nombre,
-   apellido, DNI, teléfono, correo, especie del animal y fecha del hecho. Qué es obligatorio depende
-   del canal (RN-30).
+   apellido, DNI, teléfono, correo, especie del animal, fecha del hecho y ciudad *(2026-11-06)*. Qué
+   es obligatorio depende del canal (RN-30).
 3. **Si lo carga un ente, es un caso.** **Si lo carga un ciudadano, es una solicitud** (RN-31): lo
    que declaró la persona, tal cual, a la espera de que un agente la revise.
 4. Al enviar, el ciudadano puede seguir, si quiere, con un **formulario detallado** opcional por
    secciones (dónde fue, cómo era el animal…). Cada sección se guarda al pasar a la siguiente. Es una
    sola oportunidad: el enlace vence y después solo los entes agregan datos (RN-32).
-5. Un agente revisa la solicitud: la **descarta** o la **registra**, creando un caso o sumándola a uno
+5. Un agente **de Zoonosis** revisa la solicitud *(2026-11-06)*: la **descarta** o la **registra**, creando un caso o sumándola a uno
    que ya existe. Lo declarado se copia sin transcribir; si choca con datos existentes, se conserva la
    mayor información (RN-19).
 6. Cada ente completa el caso con datos de su dominio (p. ej. Salud, la atención de la víctima,
@@ -215,7 +215,7 @@ nueva está en `front/docs/vistas/bandeja.md`). **Futuro, no se resuelve ahora:*
 | Actor | Qué hace |
 |---|---|
 | **Administrador del sistema** | ABM de usuarios, permisos y asociación a organismo. Copias de seguridad. Solo administración de accesos. |
-| **Agente interno** | Personal de un ente (Salud, Zoonosis, CADIC). Registra casos, revisa solicitudes (las descarta o las registra), completa el caso con los datos de su dominio, contacta para completar y verificar (incluida la denuncia), da seguimiento y resuelve coincidencias. Sus permisos dependen de organismo + rol. |
+| **Agente interno** | Personal de un ente (Salud, Zoonosis, CADIC). Registra casos, revisa solicitudes (solo Zoonosis, *2026-11-06*: las descarta o las registra), completa el caso con los datos de su dominio, contacta para completar y verificar (incluida la denuncia), da seguimiento y resuelve coincidencias. Sus permisos dependen de organismo + rol. |
 | **Ciudadano** | Sin cuenta. Envía una **solicitud** por el formulario público (R.17) y, si quiere, completa el formulario detallado en ese momento, una sola vez. Después no vuelve a tener acceso. *(2026-10-23; antes «Usuario externo», en suspenso)* |
 | **Analista / Comité** | Consulta, filtra y exporta (R.20, R.21). Aparece en los requerimientos sin definición formal. |
 | **Sistema** | Actor automático: marca coincidencias (a futuro, importa lotes). Aparece en el historial como «Sistema» (usuario nulo, RN-27). |
@@ -361,7 +361,14 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
 - **RN-15 · Nunca hay fusión automática.** Consolidar exige una persona autorizada y una
   confirmación explícita. *(R.14, P)* *(2026-11-03: como la persona es única por DNI (RN-20), la
   confirmación es sobre el hecho: «Confirmo que los dos casos son el mismo incidente, cargado dos
-  veces». Hasta definir la «persona autorizada», consolida cualquier agente.)*
+  veces».)* **La persona autorizada es un agente de Zoonosis** *(decisión de Darío, 2026-11-06)*:
+  Zoonosis cuida la identidad de los registros (resuelve solicitudes, reconcilia animales, consolida).
+  Solo Zoonosis decide sobre un posible duplicado, consolidar o «distintos»; los demás agentes ven la
+  marca y el aviso, y al cargar un caso con DNI repetido lo guardan para que Zoonosis lo revise. No
+  choca con RN-01: el organismo sigue sin ser marca del sistema; es un permiso. La consolidación es una
+  **operación con reglas fijas**, no una edición: puede mover datos de dominio de otro ente (p. ej. el
+  tratamiento) porque nadie elige su contenido, y queda en el historial como consolidación. El caso que
+  sobrevive lo dice en su ficha («Este caso absorbió a C-…»).
 - **RN-16 · La detección es por puntaje (0–100), no por regla binaria.** Señales y peso:
 
   | Señal | Peso | Nota |
@@ -473,7 +480,7 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   - Cada fila es la **foto completa** del registro (*snapshot*), no solo el campo que cambió: así se
     responde «¿cómo estaba el día X?» con una lectura. El valor anterior y el nuevo se obtienen
     comparando dos fotos seguidas.
-  - Cada fila guarda además: **tipo de operación** (creación, modificación, baja lógica), fecha y
+  - Cada fila guarda además: **tipo de operación** (creación, modificación, baja lógica, consolidación *(2026-11-06)*), fecha y
     hora, **usuario** (o «Sistema») y el **organismo del usuario en ese momento**, copiado en la
     fila: el usuario puede cambiar de organismo, y una fila de historial nunca se edita.
   - **Caso de contexto, opcional:** desde qué caso se hizo el cambio. Es opcional porque una persona
@@ -512,9 +519,14 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   | Teléfono | ✔ | ✔ | — | — |
   | Correo | ✔ | — | — | — |
   | Fecha del hecho | ✔ | ✔ | ✔ | — (la víctima no suele dejarla en la guardia) |
+  | Ciudad (Ushuaia, Río Grande o Tolhuin) | ✔ | ✔ | ✔ | ✔ |
 
   La obligatoriedad vive en el formulario de cada canal, no en la base (que admite el campo vacío);
-  por eso el caso guarda su **canal de origen**: `ciudadano · salud · zoonosis · cadic · historico`.
+  **Ciudad** *(decisión de Darío, 2026-11-06)*: entra al formulario inicial y es obligatoria en los
+  cuatro canales, porque un caso o una solicitud sin saber dónde fue no sirve. Sin «Otra»: si fue
+  fuera de las tres ciudades, se marca la más cercana. Así ningún caso ni solicitud nuevos nacen sin
+  ciudad (los históricos pueden no tenerla).
+  Por eso el caso guarda su **canal de origen**: `ciudadano · salud · zoonosis · cadic · historico`.
   **`historico`** *(2026-10-29)* marca los registros viejos (formulario 2025, importaciones): es la
   justificación de que el caso pueda no tener DNI (RN-21) y sirve de filtro. El DNI es obligatorio en todos porque es la clave
   que permite buscar a la persona en las bases de cada ente cuando faltan datos de contacto.
@@ -522,10 +534,29 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   staging; **nunca escribe en PERSONA ni en CASO** sin un agente de por medio (así nadie puede pisar
   los datos de otro escribiendo su DNI).
   - Estados: `pendiente` (al enviarla) · `descartada` · `registrada` (con referencia al caso).
-  - Un caso tiene 0..N solicitudes (una persona puede enviar dos veces el mismo hecho);
-    registrada ⇔ tiene caso.
+  - Un caso tiene **0, 1 o 2 solicitudes** *(decisión de Darío, 2026-11-06; antes 0..N)*: la persona
+    puede mandar dos veces el mismo hecho (el detallado es una sola oportunidad, RN-32), o informan
+    dos personas (la víctima y su madre). Una tercera ya indica basura: se descarta. registrada ⇔
+    tiene caso. Al consolidar, las solicitudes del caso absorbido se quedan en él: no pasan al que
+    sobrevive.
+  - **Solo se suma a un caso `registrado` o `en_seguimiento`** *(2026-11-06)*: `finalizado`,
+    `desestimado` y `unificado` son finales y no se reabren (RN-36). Si el caso de la víctima ya está
+    cerrado, la solicitud se registra como caso nuevo (otro ataque) o se descarta.
   - Al registrarla, sus datos se copian sin transcribir. Si chocan con datos existentes (p. ej. la
     persona ya existe con otro teléfono), se conserva la mayor información (RN-19).
+  - **Cada animal de la solicitud queda apuntando a su CASO_ANIMAL** *(2026-11-06)*: al crear el
+    caso, al animal que se creó con él; al sumarla, al que eligió el agente (o al nuevo, si el caso no
+    lo tenía). Sin esa referencia no se puede mostrar en cada animal del caso lo que la persona
+    declaró sobre su dueño y su chip, que no se copia: lo confirma Zoonosis (RN-32). Quién decide el
+    emparejamiento lo hace el agente en la pantalla Sumar: por cada animal de la solicitud elige uno
+    del caso de la misma especie (sin repetir), «es otro animal» (se agrega) o «no va al caso» (no
+    existe o no corresponde: no se crea en el caso y lo declarado queda solo en la solicitud); solo
+    viene preelegido si hay uno de cada lado. El sistema no lo adivina por la descripción (RN-22). **Al
+    caso pasa solo lo que Zoonosis confirma; la solicitud guarda siempre lo que dijo la persona.**
+  - **Solo Zoonosis ve y resuelve las solicitudes** *(2026-11-06)*: es quien atiende al público,
+    anota las denuncias y sigue al animal, y el único ente que ve dueño y chip. Salud registra casos
+    por el tratamiento; CADIC observa los datos, no decide sobre ellos. Así lo declarado sobre el dueño
+    y el chip queda, también en la solicitud, solo a la vista de Zoonosis (RN-35).
   - Guarda fecha de **envío** (creación, automática) y de **resolución**. Si la solicitud creó el
     caso o se sumó a uno existente es un **dato derivado** de la fecha de resolución, no un estado.
   - No se borra nunca (RN-06b): la registrada queda como **procedencia** del caso. No lleva
@@ -541,9 +572,14 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
     está al alcance de la persona. TRATAMIENTO queda afuera: lo ve y lo carga solo Salud (RN-34).
     Toda pregunta con escala admite «No sé» (RN-23). Lo más valioso va primero,
     porque la persona puede abandonar en cualquier sección.
-    1. **Dónde fue** → CASO: ubicación (pin + dirección propuesta + referencias, RN-33), ciudad (H3:
-       Ushuaia, Río Grande o Tolhuin; no hay «otra», *2026-11-03*), tipo de lugar (H5: casa propia, casa ajena, vía pública,
-       espacio público, zona rural) y hora (H2). La fecha ya vino en el inicial.
+    1. **Dónde fue** → CASO: ubicación (pin + dirección propuesta + referencias, RN-33), tipo de
+       lugar (H5: casa propia, casa ajena, vía pública, espacio público, zona rural) y hora (H2). La
+       fecha y la ciudad ya vinieron en el inicial: el mapa arranca centrado en esa ciudad.
+       *(2026-11-06)* El mapa arranca oscurecido con el aviso «Mové el mapa y dejá el pin donde fue el
+       ataque», que se va con el primer gesto de la persona (un recentrado automático no cuenta). La
+       dirección se propone recién al soltar el mapa después de ese gesto. **Sin gesto no hay punto**:
+       la parte se guarda sin coordenadas, para no registrar como lugar del hecho un centro de ciudad
+       que nadie eligió (RN-33: el punto siempre lo pone una persona).
     2. **Qué pasó** → CASO y PERSONA víctima: qué pasó (mordedura, arañazo, intentó atacar sin
        lastimar, me lastimé al escapar → TIPO_EVENTO, RN-03, RN-24), cuántos animales atacaron (crea
        un CASO_ANIMAL por cada uno), edad de la persona atacada (P2, dato epidemiológico clave,
@@ -815,7 +851,7 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   **Tentativa, sacada de la narrativa** *(2026-10-30; el equipo la da por buena; se modela y se
   diseña así, falta validarla con los organismos)*:
   - **Por fila:** todo agente (Salud, Zoonosis, CADIC) ve todos los casos: es un registro compartido
-    (RN-01). Cualquier agente ve y resuelve las solicitudes. El analista ve casos sin datos
+    (RN-01). Consolidar y decidir posibles duplicados: **solo Zoonosis** (RN-15, 2026-11-06). Las solicitudes las ve y las resuelve **solo Zoonosis** *(decisión de Darío, 2026-11-06)*: Salud registra casos por el tratamiento y CADIC observa los datos, ninguno decide sobre lo que declara un ciudadano. El analista ve casos sin datos
     personales; el administrador no ve casos (§5).
   - **Edición:** los **datos comunes** del caso (hecho, víctima, contacto, estado, animales y su
     descripción) los edita cualquier agente, con su rastro en el historial (RN-27). Los **datos de
@@ -871,12 +907,14 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   - **Persona que ya existe:** la persona es única por DNI (RN-20). Si al cargar un caso el DNI ya es
     de alguien, no está definido qué muestra el formulario (¿autocompleta? ¿avisa si el nombre no
     coincide?). Se define con el back.
-  - **Consolidar:** qué pasa con los animales, el tratamiento, las denuncias, las solicitudes y los
-    documentos del caso absorbido (¿se suman al que sobrevive o se eligen?), y cómo se emparejan los
-    animales de dos casos al consolidar o al sumar una solicitud. Qué rol puede consolidar («persona
-    autorizada», RN-15) no está en los permisos tentativos.
+  - **Consolidar:** qué pasa con los animales, las denuncias y los documentos del caso absorbido
+    (¿se suman al que sobrevive o se eligen?), y cómo se emparejan los animales de los dos casos (al
+    sumar una solicitud ya está, RN-31). *(2026-11-06, ya definido: las solicitudes se quedan en el
+    absorbido; del tratamiento queda uno, entero, el que tenga más datos; consolida solo Zoonosis,
+    RN-15. Ver `modelo/decisiones.md`.)*
   - **Corregir lo cargado:** fusionar dos personas que resultaron ser la misma; deshacer una
-    reconciliación de animales hecha por error.
+    reconciliación de animales hecha por error; **quitar del caso un animal que no iba** (propuesta
+    para después de la alfa: baja lógica en CASO_ANIMAL, ver `modelo/decisiones.md`, 2026-11-06).
   - **Reconciliar sin chip repetido:** no está el selector del otro animal.
   - **Historial:** «Ver cómo estaba en una fecha» no tiene diseño; cómo se recortan los cambios de
     campos que un rol no ve (RN-35).
