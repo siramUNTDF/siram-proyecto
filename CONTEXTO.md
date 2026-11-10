@@ -179,6 +179,11 @@ nueva está en `front/docs/vistas/bandeja.md`). **Futuro, no se resuelve ahora:*
 
 ## 4. Universo del discurso (glosario)
 
+> **Qué significa cada valor** (estados, motivos de espera, marcas, día 10, tenencia, tipo de lugar,
+> motivos de desestimación, tipo de evento, canal, solicitud, denuncia): `../front/docs/narrativa.md`
+> §7, aprobado por Darío el 2026-11-10. Se escribe una sola vez, ahí, porque es la base de la ayuda
+> en pantalla y del futuro manual; si cambia un valor acá, se actualiza esa sección.
+
 | Término | Significado en SIRAM |
 |---|---|
 | **Caso** | El **incidente** que SIRAM registra y gestiona (`C-2026-0418`): un ataque de perro o gato a una persona. Lo registra un agente de un ente, o nace de una solicitud ciudadana que un agente registra. Guarda su canal de origen. Es lo único que SIRAM trata: se sigue, se completa y se cuenta en las estadísticas. |
@@ -200,7 +205,7 @@ nueva está en `front/docs/vistas/bandeja.md`). **Futuro, no se resuelve ahora:*
 | **Consolidar** | Fundir dos casos duplicados en uno. **Irreversible.** |
 | **Vincular** | Enlazar dos casos como hermanos sin fundirlos. **Reversible.** |
 | **Marca** | Señal paralela al estado (el «semáforo»): incompleto, posible duplicado, grave. *(2026-11-03: sale «posible evento relacionado», entra «grave»)* |
-| **Motivo de espera** | Por qué un caso en seguimiento está detenido: contacto, respuesta o certificado. |
+| **Motivo de espera** | Por qué un caso en seguimiento está detenido: contacto, respuesta o certificado (RN-10). |
 | **Organismo** | Ente participante (Zoonosis Ushuaia, Hospital Regional, CADIC, etc.). En SIRAM es un **atributo del dato**, nunca una marca visual del sistema. |
 | **ADC** | Animal Doméstico de Compañía (término del formulario de Zoonosis, O.M. 4800). |
 | **F1 / F2 / F3** | F1 = formulario público online (Schiavini, «formulario 2025»). F2 = formulario en papel de ventanilla de Zoonosis Ushuaia. F3 = pendiente (probablemente guardias de Salud). |
@@ -292,7 +297,16 @@ Cada regla indica su fuente. **R.xx** = requerimiento del PDF · **E1** = Entrev
   `registrado`. (`sin_confirmar` y `confirmado` se eliminaron el 2026-10-08: venían del formulario
   público, donde había que confirmar lo que cargaba cualquiera; hoy un caso siempre lo registra un agente.)
 - **RN-10 · Motivo de espera (eje 2):** `contacto · respuesta · certificado`. **Solo existe si el
-  caso está `en_seguimiento`.**
+  caso está `en_seguimiento`.** *(Definidos el 2026-11-09/10, ver `modelo/decisiones.md`.)*
+  - **Contacto:** no hay un teléfono para comunicarse con la víctima ni con su contacto
+    responsable, y alguien lo busca por DNI en las bases de su organismo (narrativa, paso 6). Que
+    falte solo el correo no detiene el caso.
+  - **Respuesta:** hay teléfono, pero la persona no atiende o no contesta.
+  - Contacto y respuesta son temporales: después de la alfa los reemplaza la región de contacto.
+  - **Certificado:** el caso espera que la persona presente el certificado médico de la mordedura;
+    Zoonosis lo adjunta al caso (HZ08). **Decisión temporal**: se replantea cuando entren las
+    regiones paralelas del caso (después de la alfa, `modelo/decisiones.md`, 2026-11-03), donde esta
+    espera pasaría a la región de Zoonosis junto con la denuncia.
 - **RN-11 · Marcas (eje 3, paralelas):** incompleto · posible duplicado · grave. Conviven entre sí
   y con cualquier estado. (La marca «origen ciudadano sin verificar»
   se eliminó el 2026-10-08: un caso siempre lo registra un agente, así que nunca está «sin verificar».
@@ -891,6 +905,10 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   como **sugerencia**: no se modela, no es necesario. Refine (§9, técnicos) es igual de opcional.
 
 **Pendientes de diseño (agente de diseño):**
+- **PARA DESPUÉS DE LA ALFA, NO SE RESUELVE HOY · La espera del certificado vive en dos lugares**
+  *(2026-11-10)*: el motivo de espera `certificado` del caso (RN-10) y el estado tentativo
+  `pendiente_confirmacion` de la denuncia (RN-13). Nada los sincroniza. Se resuelve con las regiones
+  paralelas del caso (`modelo/decisiones.md`, 2026-11-03 y 2026-11-09).
 - **Huecos detectados al escribir las fichas del front** *(2026-11-03)*:
   *Decididos tentativamente en las fichas* (ver `diseno/correcciones-fichas.md` y
   `diseno/decisiones-fichas.md`; se revisan con el equipo): la ventana **Editar** del caso; editar el
@@ -945,8 +963,8 @@ de texto, componentes) están en Figma, página Fundamentos (`diseno/figma/funda
   - **Para estar completo** (marca Incompleto): solo los datos del caso. Un caso nace Incompleto si
     le falta alguno. La falta de contacto no es Incompleto: es `en_seguimiento` con motivo
     `contacto` (narrativa, paso 6).
-  - **Qué campos cuentan para estar completo — SUPOSICIÓN del agente de diseño, no decidida por el
-    equipo; revisarla:** fecha del hecho, ciudad y lugar (RN-25), más **tipo de lugar** y **edad de
+  - **Qué campos cuentan para estar completo** *(suposición del agente de diseño, aprobada de
+    momento por Darío el 2026-11-10; la edad de la víctima es la menos crítica, pero se queda)*: fecha del hecho, ciudad y lugar (RN-25), más **tipo de lugar** y **edad de
     la víctima** (datos epidemiológicos clave, RN-26) y **tipo de evento** (clasifica el caso y lo
     hace contable). La edad de la víctima vive en el caso (`CASO.victima_edad`, al momento del hecho),
     no en PERSONA: una persona puede estar en casos de años distintos. *(2026-11-02)*

@@ -573,3 +573,58 @@ descarta (acuerdo con Darío):
   comparar), y la de veracidad es **desestimar** con «hecho inexistente o no verificable».
 - Mezclaría el estado con las marcas (RN-12) y haría de Zoonosis una aduana de todo caso (RN-01).
 - No cambia el modelo.
+
+## 2026-11-09 · Motivo de espera: se definen los tres (temporal)
+
+Al pedir el front el significado de cada valor (para la ayuda en pantalla y un futuro manual), se vio
+que los motivos de espera nunca se definieron: los propuso el agente de diseño el 25/09 en «De Delta a
+SIRAM», cuando caso y denuncia eran lo mismo. Decisiones con Darío:
+
+- **`respuesta`: se sacó el 2026-11-09 y volvió el 2026-11-10, ahora definido.** Se sacó porque
+  nació de esa narrativa vieja sin significado. Al definir `contacto` apareció uno real: tenemos el
+  teléfono, pero la persona no atiende. Sin él, ese caso no tendría motivo válido (pasar a
+  `en_seguimiento` exige uno, RN-10) y se cargaría mal como `contacto`. Darío eligió separarlos.
+- **`contacto`**: no hay un teléfono para comunicarse con la víctima ni con su contacto responsable,
+  y alguien lo busca por DNI (narrativa, paso 6). Que falte solo el correo no detiene el caso.
+- **`respuesta`**: hay teléfono, pero la persona no atiende o no contesta.
+- `contacto` y `respuesta` también son **temporales**: después de la alfa los reemplaza la región de
+  contacto (entrada del 2026-11-03), con un estado por etapa (p. ej. buscando el dato · sin respuesta ·
+  contactado · no ubicado).
+- **`certificado`**: el caso espera que la persona presente el certificado médico de la mordedura;
+  Zoonosis lo adjunta al caso (HZ08: 48 h hábiles para presentarlo, si no la denuncia se desglosa y se
+  devuelve). **Es una decisión temporal.** Hoy solo significa eso. Se replantea con las **regiones
+  paralelas** (entrada del 2026-11-03, después de la alfa): la idea de Darío es que el caso puede no
+  tener nada más que hacer para Zoonosis y seguir vivo para Salud, porque la víctima no terminó el
+  tratamiento. Con las regiones, esta espera pasaría a la de Zoonosis, junto con la denuncia (y su
+  estado tentativo `pendiente_confirmacion`, que hoy registra la misma espera desde el trámite).
+- Sin migración: el modelo es borrador sin tag.
+- **PROBLEMA ABIERTO, para la versión posterior a la alfa (no se resuelve hoy).** La espera del
+  certificado queda registrada en **dos lugares**: `CASO.motivo_espera = certificado` y
+  `DENUNCIA.estado = pendiente_confirmacion`. No se contradicen, pero nada los sincroniza: puede haber
+  una denuncia pendiente en un caso que espera otra cosa, o un caso esperando el certificado sin
+  denuncia. Mantener un mismo estado en dos lugares trae inconsistencias. Se resuelve al cerrar las
+  regiones paralelas (entrada del 2026-11-03), dejando la espera en un solo lugar. Darío, 2026-11-10.
+
+## 2026-11-10 · Qué significa cada valor
+
+El front pidió el significado de los valores que hoy son solo etiquetas, como base de la ayuda en
+pantalla y de un futuro manual. Quedan escritos en `../front/docs/narrativa.md` §7 y aprobados por
+Darío. Tres no salían de ninguna fuente y los propuso el agente de diseño:
+- **Tipo de lugar:** casa propia (incluye patio o jardín) · casa ajena · vía pública (calle o vereda) ·
+  espacio público (plaza, parque, playa, sendero) · zona rural (fuera de la zona urbana).
+- **Tenencia «propio»:** es de la víctima o de quien informó por ella (de RN-32).
+- **Campos que definen Incompleto** (CONTEXTO §9): aprobados de momento.
+El manual y el formato de la ayuda quedan para cuando las pantallas se estabilicen.
+
+Al ampliar §7 con el cruce del front (mismo día):
+- **`TRATAMIENTO.zona_cuerpo`: `cara` pasa a `cabeza`.** Los 6 valores se tomaron el 2026-11-02 del
+  gráfico de ejemplo de Figma, que venía del prototipo (no es fuente). La fuente real es el F1, con 10:
+  cabeza · cara · cuello · brazos · manos · piernas · pies · tronco · genitales · múltiples. Darío
+  prefiere una lista corta y se quedan 6 que **agrupan** las del F1: cabeza (cabeza, cara, cuello),
+  piernas (incluye pies), tronco (incluye glúteos y genitales), brazos, manos, múltiples.
+- **`TRATAMIENTO.gravedad`** (L2) sí sale del F1: «Tipo de lesión (consulte al médico): Excoriación
+  (irritación en la piel) / Herida superficial / Herida profunda / Amputación». Las definiciones de
+  §7 las propuso el agente de diseño; quedan tentativas, a validar con Salud.
+- La descripción del animal (tamaño, edad aparente) y los motivos de no denunciar, definidos en §7,
+  tentativos. El estado `unificado` se muestra «Unificado en otro caso».
+

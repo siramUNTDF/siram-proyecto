@@ -89,7 +89,7 @@ erDiagram
         string numero UK "C-AAAA-NNNN, visible"
         enum canal_origen "ciudadano|salud|zoonosis|cadic|historico (RN-30)"
         enum estado "registrado|en_seguimiento|finalizado|desestimado|unificado; transiciones en RN-36 (grave es marca derivada, 2026-11-03)"
-        enum motivo_espera "contacto|respuesta|certificado; solo si en_seguimiento"
+        enum motivo_espera "contacto|respuesta|certificado; solo si en_seguimiento (definidos 2026-11-09/10)"
         enum motivo_desestimacion "TENTATIVO: fuera_de_alcance|fuera_de_provincia|inexistente_o_no_verificable|cargado_por_error; obligatorio si desestimado"
         string observacion_desestimacion
         id unificado_en_caso_id FK "solo si unificado"
@@ -169,7 +169,7 @@ erDiagram
         id id PK
         id caso_id FK "único: un tratamiento por caso (RN-34)"
         date fecha_consulta
-        enum zona_cuerpo "L3: piernas|manos|brazos|cara|tronco|multiples (multiples TENTATIVO, §7.7)"
+        enum zona_cuerpo "L3: piernas|manos|brazos|cabeza|tronco|multiples (agrupa los 10 del F1, 2026-11-10; multiples TENTATIVO, §7.7)"
         enum gravedad "L2: excoriacion|herida_superficial|herida_profunda|amputacion"
         bool vacuna_antirrabica "L7, TENTATIVO sí/no (esquema a consultar con Salud)"
         bool antitetanica
