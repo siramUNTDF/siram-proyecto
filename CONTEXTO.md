@@ -4,6 +4,9 @@
 > solo lo que necesita en `front/docs/` (ver §1).
 > Última actualización: 2026-11-06. Lo mantiene el agente de diseño (ver §1).
 
+Continuidad entre sesiones y colaboradores: [memoria compartida y bitácora](MEMORY.md).
+Consultar sus verificaciones y límites; no reemplaza las reglas ni las decisiones de este documento.
+
 ---
 
 ## 0. Directiva: este proyecto NO arranca de cero
